@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taipei Trip Web App</title>
+
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen bg-gray-900 text-gray-800">
+
+  <!-- 背景：台北 101 夜景 -->
+  <div class="absolute inset-0 z-0">
+    <img
+      src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1800&q=80"
+      class="w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+  </div>
+
+  <div id="app" class="relative z-10 max-w-lg px-6 py-6 mx-auto">
+
+    <!-- APP 外框 -->
+    <div class="backdrop-blur-xl bg-white/80 shadow-xl rounded-2xl p-6 border border-white/40">
+
+      <h1 class="text-2xl font-bold mb-4 text-gray-900">
+        台北旅遊行程 App
+      </h1>
+
+      <!-- Tabs -->
+      <div class="flex mb-5 bg-white/70 rounded-xl backdrop-blur border border-white/40 overflow-hidden">
+        <button
+          v-for="(t, i) in tabs"
+          :key="i"
+          @click="currentTab = t"
+          class="flex-1 py-2 text-center font-medium transition"
+          :class="currentTab === t
+            ? 'bg-gradient-to-r from-sky-100 to-teal-100 text-gray-900'
+            : 'text-gray-600 hover:bg-white/60'"
+        >
+          {{ t }}
+        </button>
+      </div>
+
+      <!-- 日期選擇：淺色漸變 -->
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-2">選擇日期</h2>
+
+        <div class="grid grid-cols-3 gap-3">
+          <button
+            v-for="(day, index) in days"
+            :key="index"
+            @click="selectedDay = index"
+            class="p-3 rounded-xl text-center border transition font-medium"
+            :class="selectedDay === index
+              ? 'bg-gradient-to-br from-white to-sky-100 border-sky-300 text-gray-900 shadow'
+              : 'bg-white/70 border-white/40 text-gray-700 hover:bg-white'"
+          >
+            {{ day }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 航班資訊卡：淺色漸變 + from/to -->
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-2">航班資訊</h2>
+
+        <div class="rounded-2xl p-4 bg-gradient-to-br from-white to-teal-100 border border-white/40 shadow">
+
+          <div class="mb-3">
+            <label class="text-sm text-gray-600">from</label>
+            <input
+              v-model="flight.from"
+              class="w-full mt-1 p-2 rounded-lg border bg-white/70"
+              placeholder="例如：HKG"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="text-sm text-gray-600">to</label>
+            <input
+              v-model="flight.to"
+              class="w-full mt-1 p-2 rounded-lg border bg-white/70"
+              placeholder="例如：TPE"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="text-sm text-gray-600">出發時間</label>
+            <input
+              v-model="flight.depTime"
+              class="w-full mt-1 p-2 rounded-lg border bg-white/70"
+              placeholder="07:45"
+            />
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-600">抵達時間</label>
+            <input
+              v-model="flight.arrTime"
+              class="w-full mt-1 p-2 rounded-lg border bg-white/70"
+              placeholder="10:20"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab 區域內容 -->
+      <div v-if="currentTab === '行程'">
+
+        <!-- 行程輸入 -->
+        <h2 class="text-lg font-semibold mb-2">新增行程</h2>
+
+        <div class="flex gap-2 mb-3">
+          <input
+            v-model="inputItem"
+            class="flex-1 p-2 rounded-lg border bg-white/70"
+            placeholder="輸入行程，例如：台北 101、永康街…"
+          />
+          <button
+            @click="addItem"
+            class="px-4 bg-blue-600 text-white rounded-lg"
+          >
+            加入
+          </button>
+        </div>
+
+        <!-- 行程列表 -->
+        <ul>
+          <li
+            v-for="(item, i) in itinerary[selectedDay]"
+            :key="i"
+            class="flex justify-between items-center bg-white/70 backdrop-blur border border-white/40 px-3 py-2 rounded-lg mb-2"
+          >
+            <span>{{ item }}</span>
+            <button @click="removeItem(i)" class="text-red-500 text-sm">刪除</button>
+          </li>
+        </ul>
+
+      </div>
+
+      <!-- 美食 -->
+      <div v-if="currentTab === '美食'">
+        <h2 class="text-lg font-semibold mb-3">美食清單</h2>
+
+        <div class="flex gap-2 mb-3">
+          <input
+            v-model="foodInput"
+            class="flex-1 p-2 rounded-lg border bg-white/70"
+            placeholder="例如：豆花、牛肉麵、鹽酥雞…"
+          />
+          <button
+            @click="addFood"
+            class="px-4 bg-blue-600 text-white rounded-lg"
+          >
+            加入
+          </button>
+        </div>
+
+        <ul>
+          <li
+            v-for="(item, i) in food"
+            :key="i"
+            class="flex justify-between items-center bg-white/70 px-3 py-2 rounded-lg mb-2 border border-white/40"
+          >
+            <span>{{ item }}</span>
+            <button @click="removeFood(i)" class="text-red-500 text-sm">刪除</button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 景點 -->
+      <div v-if="currentTab === '景點'">
+        <h2 class="text-lg font-semibold mb-3">景點收藏</h2>
+
+        <div class="flex gap-2 mb-3">
+          <input
+            v-model="spotInput"
+            class="flex-1 p-2 rounded-lg border bg-white/70"
+            placeholder="例如：象山、北投溫泉、淡水…"
+          />
+          <button
+            @click="addSpot"
+            class="px-4 bg-blue-600 text-white rounded-lg"
+          >
+            加入
+          </button>
+        </div>
+
+        <ul>
+          <li
+            v-for="(item, i) in spots"
+            :key="i"
+            class="flex justify-between items-center bg-white/70 px-3 py-2 rounded-lg mb-2 border border-white/40"
+          >
+            <span>{{ item }}</span>
+            <button @click="removeSpot(i)" class="text-red-500 text-sm">刪除</button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 交通 -->
+      <div v-if="currentTab === '交通'">
+        <h2 class="text-lg font-semibold mb-3">交通資訊</h2>
+        <p class="text-gray-600 mb-2">（此區可以加入捷運地圖、巴士、計程車預算等。）</p>
+        <p class="text-gray-500">— 八喜可以按小姐要求繼續擴充。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Vue App -->
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          tabs: ["行程", "美食", "景點", "交通"],
+          currentTab: "行程",
+
+          days: ["Day 1", "Day 2", "Day 3", "Day 4"],
+          selectedDay: 0,
+
+          itinerary: [[], [], [], []],
+          inputItem: "",
+
+          food: [],
+          foodInput: "",
+
+          spots: [],
+          spotInput: "",
+
+          flight: {
+            from: "",
+            to: "",
+            depTime: "",
+            arrTime: "",
+          },
+        };
+      },
+
+      mounted() {
+        const saved = JSON.parse(localStorage.getItem("trip-data"));
+        if (saved) {
+          Object.assign(this.$data, saved);
+        }
+      },
+
+      watch: {
+        $data: {
+          handler() {
+            localStorage.setItem("trip-data", JSON.stringify(this.$data));
+          },
+          deep: true
+        }
+      },
+
+      methods: {
+        addItem() {
+          if (!this.inputItem.trim()) return;
+          this.itinerary[this.selectedDay].push(this.inputItem);
+          this.inputItem = "";
+        },
+        removeItem(i) {
+          this.itinerary[this.selectedDay].splice(i, 1);
+        },
+
+        addFood() {
+          if (!this.foodInput.trim()) return;
+          this.food.push(this.foodInput);
+          this.foodInput = "";
+        },
+        removeFood(i) {
+          this.food.splice(i, 1);
+        },
+
+        addSpot() {
+          if (!this.spotInput.trim()) return;
+          this.spots.push(this.spotInput);
+          this.spotInput = "";
+        },
+        removeSpot(i) {
+          this.spots.splice(i, 1);
+        }
+      }
+    });
+
+    app.mount("#app");
+  </script>
+
+</body>
+</html>
