@@ -255,33 +255,6 @@
             </div>
           </div>
 
-          <div v-if="currentTab === '美食'">
-            <h3 class="text-base font-bold mb-2">美食清單</h3>
-            <ul class="space-y-2">
-      
-                <li v-for="(f,i) in foodList" :key="i" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
-                <div class="font-medium">{{ f }}</div>
-                <button class="text-red-500 text-sm" @click="removeFood(i)">刪除</button>
-              </li>
-            </ul>
-
-            <div class="mt-3 flex gap-2">
-  
-                <input v-model="newFood" @keyup.enter="addFood" class="flex-1 p-2 rounded-lg border bg-white/70" placeholder="新增美食">
-              <button @click="addFood" class="px-4 bg-sky-600 text-white rounded-lg">加入</button>
-            </div>
-          </div>
-          
-          <div v-if="currentTab === '交通'">
-            <h3 class="text-base font-bold mb-2">交通筆記</h3>
-            <div class="text-sm text-gray-600">以計程車為主；出發前 10:30 前需休息。</div>
-            <div class="mt-3 space-y-2">
-              <div class="p-3 rounded-lg bg-white/80 border">預計交通：計程車 / 約 30–45 分鐘至機場</div>
-              <div class="p-3 rounded-lg bg-white/80 border">機場到達建議：提前 2 小時抵達</div>
-       
-            </div>
-          </div>
-
           <div v-if="currentTab === '購物'">
             <h3 class="text-base font-bold mb-2">🛒 購物清單</h3>
             <ul class="space-y-2">
@@ -658,11 +631,9 @@
           { name:'護照影本備份', isDone: true }
         ]);
         const newPreNote = ref('');
-
-        const foodList = ref(['千暉鵝肉店','雅香石頭火鍋','梁山泊小籠湯包']);
-        const newFood = ref('');
-
-        // 景點 (spots/newSpot 變數已移除)
+        
+        // 已刪除：美食 foodList / newFood
+        // 已刪除：景點 spots / newSpot
         
         const shoppingList = ref([
           { name:'鳳梨酥 (佳德)', isDone: false },
@@ -731,14 +702,10 @@
         }
 
         const newItemText = ref('');
-
-        function addFood(){ if (!newFood.value.trim()) return; foodList.value.push(newFood.value.trim()); newFood.value='';
-        }
-        function removeFood(i){ foodList.value.splice(i,1);
-        }
-
-        // 景點相關函式已移除
         
+        // 已刪除：addFood / removeFood
+        // 已刪除：景點相關函式
+
         function addShoppingItem(){ if (!newShoppingItem.value.trim()) return; shoppingList.value.push({ name:newShoppingItem.value.trim(), isDone:false }); newShoppingItem.value='';
         }
         function removeShoppingItem(i){ shoppingList.value.splice(i,1);
@@ -794,8 +761,8 @@
           }
           else if (currentTab.value === '行程'){ if (newItemText.value) addItineraryItem();
           }
-          else if (currentTab.value === '美食'){ if (newFood.value) addFood();
-          }
+          // 已刪除：美食
+          // 已刪除：交通
           else if (currentTab.value === '購物'){ if (newShoppingItem.value) addShoppingItem();
           }
           else if (currentTab.value === '記帳'){ if (newExpense.name && newExpense.amount) addExpense();
@@ -856,14 +823,14 @@
         }
 
         // localStorage persistence
-        const STORAGE_KEY = 'emenu-taipei-data-v3'; // 變更版本號，以確保載入 flights 的新格式
+        const STORAGE_KEY = 'emenu-taipei-data-v3'; 
         function saveAll(){
           const payload = {
             currentTab: currentTab.value,
             selectedDay: selectedDay.value,
             itinerary: JSON.parse(JSON.stringify(itinerary)),
             preTripNotes: preTripNotes.value,
-            foodList: foodList.value,
+            // 已刪除：foodList
             shoppingList: shoppingList.value,
             expenses: expenses.value,
             infoList: infoList.value,
@@ -889,7 +856,7 @@
               }
             }
             if (p.preTripNotes) preTripNotes.value = p.preTripNotes;
-            if (p.foodList) foodList.value = p.foodList;
+            // 已刪除：if (p.foodList) foodList.value = p.foodList;
             if (p.shoppingList) shoppingList.value = p.shoppingList;
             if (p.flights) flights.value = p.flights; // <-- 載入 flights
             
@@ -919,7 +886,8 @@
           setInterval(fetchRate, 10*60*1000);
           setInterval(fetchWeather, 10*60*1000);
         });
-        watch([currentTab, selectedDay, () => itinerary.map(d=>d.length), preTripNotes, foodList, shoppingList, expenses, infoList, flights, rate, () => weather.temp], () => { // 加入 flights
+        // 刪除 foodList 的監聽
+        watch([currentTab, selectedDay, () => itinerary.map(d=>d.length), preTripNotes, shoppingList, expenses, infoList, flights, rate, () => weather.temp], () => { 
           saveAll();
         }, { deep:true });
         // expose
@@ -928,7 +896,7 @@
           // lists
           preTripNotes, newPreNote, addPreNote, removePreNote,
           itinerary, newItemText, addItineraryItem, removeItineraryItem,
-          foodList, newFood, addFood, removeFood,
+          // 已刪除：foodList, newFood, addFood, removeFood
           shoppingList, newShoppingItem, addShoppingItem, removeShoppingItem,
  
           // expenses
