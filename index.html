@@ -424,13 +424,13 @@
                     <input v-model="newFlight.title" class="w-full p-2 rounded-lg border bg-white" placeholder="航班名稱/備註 (例: 國泰航空)">
                     
                     <div class="flex gap-3">
-                        <input v-model="newFlight.fromCode" class="flex-1 p-2 rounded-lg border bg-white" placeholder="出發城市代碼 (例: HKG)">
-                        <input v-model="newFlight.toCode" class="flex-1 p-2 rounded-lg border bg-white" placeholder="抵達城市代碼 (例: TPE)">
+                        <input v-model="newFlight.fromCode" class="flex-1 **min-w-0** p-2 rounded-lg border bg-white" placeholder="出發城市代碼 (例: HKG)">
+                        <input v-model="newFlight.toCode" class="flex-1 **min-w-0** p-2 rounded-lg border bg-white" placeholder="抵達城市代碼 (例: TPE)">
                     </div>
 
                     <div class="flex gap-3">
-                        <input v-model="newFlight.fromTerminal" class="flex-1 p-2 rounded-lg border bg-white" placeholder="出發航廈 (例: T1)">
-                        <input v-model="newFlight.toTerminal" class="flex-1 p-2 rounded-lg border bg-white" placeholder="抵達航廈 (例: T1)">
+                        <input v-model="newFlight.fromTerminal" class="flex-1 **min-w-0** p-2 rounded-lg border bg-white" placeholder="出發航廈 (例: T1)">
+                        <input v-model="newFlight.toTerminal" class="flex-1 **min-w-0** p-2 rounded-lg border bg-white" placeholder="抵達航廈 (例: T1)">
                     </div>
 
                     <div class="flex gap-3">
@@ -632,8 +632,6 @@
         ]);
         const newPreNote = ref('');
         
-        // 已刪除：美食 foodList / newFood
-        // 已刪除：景點 spots / newSpot
         
         const shoppingList = ref([
           { name:'鳳梨酥 (佳德)', isDone: false },
@@ -703,8 +701,7 @@
 
         const newItemText = ref('');
         
-        // 已刪除：addFood / removeFood
-        // 已刪除：景點相關函式
+        
 
         function addShoppingItem(){ if (!newShoppingItem.value.trim()) return; shoppingList.value.push({ name:newShoppingItem.value.trim(), isDone:false }); newShoppingItem.value='';
         }
@@ -761,8 +758,7 @@
           }
           else if (currentTab.value === '行程'){ if (newItemText.value) addItineraryItem();
           }
-          // 已刪除：美食
-          // 已刪除：交通
+          
           else if (currentTab.value === '購物'){ if (newShoppingItem.value) addShoppingItem();
           }
           else if (currentTab.value === '記帳'){ if (newExpense.name && newExpense.amount) addExpense();
@@ -830,7 +826,7 @@
             selectedDay: selectedDay.value,
             itinerary: JSON.parse(JSON.stringify(itinerary)),
             preTripNotes: preTripNotes.value,
-            // 已刪除：foodList
+            
             shoppingList: shoppingList.value,
             expenses: expenses.value,
             infoList: infoList.value,
@@ -856,7 +852,7 @@
               }
             }
             if (p.preTripNotes) preTripNotes.value = p.preTripNotes;
-            // 已刪除：if (p.foodList) foodList.value = p.foodList;
+            
             if (p.shoppingList) shoppingList.value = p.shoppingList;
             if (p.flights) flights.value = p.flights; // <-- 載入 flights
             
@@ -896,7 +892,7 @@
           // lists
           preTripNotes, newPreNote, addPreNote, removePreNote,
           itinerary, newItemText, addItineraryItem, removeItineraryItem,
-          // 已刪除：foodList, newFood, addFood, removeFood
+          
           shoppingList, newShoppingItem, addShoppingItem, removeShoppingItem,
  
           // expenses
