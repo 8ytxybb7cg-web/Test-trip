@@ -47,7 +47,8 @@
         border: 1px solid rgba(255,255,255,0.35);
     }
 
-    .iphone-dock button i { font-size: 1.25rem; }
+    /* ⬇️ Dock 圖示大小 (1.875rem) */
+    .iphone-dock button i { font-size: 1.875rem; }
 
     /* 卡片細節 */
     .glass-card { border-radius: var(--card-radius); background: rgba(255,255,255,0.88); border: 1px solid rgba(255,255,255,0.35);
@@ -84,9 +85,9 @@
       </div>
 
       <div class="mb-4">
-        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           <button @click="currentTab = '行前'" 
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
+                  class="flex-shrink-0 w-16 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
                   :class="currentTab === '行前' ?
                   'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
              <i class="ph ph-list text-xl mb-1"></i>
@@ -95,7 +96,7 @@
           
           <button v-for="(d, i) in days" :key="i"
                   @click="selectDay(i); currentTab = '行程'"
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
+                  class="flex-shrink-0 w-16 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
                   :class="selectedDay === i && currentTab === '行程' ?
                   'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 text-gray-600 border border-white/40'">
             <span class="text-[10px] font-semibold text-sky-600/90 mb-0.5">Day {{ i + 1 }}</span>
@@ -204,7 +205,7 @@
 
       <div class="flex justify-end mb-3">
         <button @click="openAddModal" class="bg-sky-600 
-        text-white px-4 py-2 rounded-lg shadow">+ 新增</button>
+        text-white px-4 py-2 rounded-lg shadow font-medium text-sm">+ 新增</button>
       </div>
 
       <div class="rounded-2xl p-3 bg-white/85 border border-white/30 backdrop-blur shadow">
@@ -213,7 +214,7 @@
           <div v-if="currentTab === '行前'">
             <h3 class="text-base font-bold mb-2">✅ 行前準備清單</h3>
             <ul class="space-y-2">
-              <li v-for="(note, i) in preTripNotes" :key="i" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+              <li v-for="(note, i) in preTripNotes" :key="note.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
                 <div class="flex items-center gap-2">
                   <i class="ph text-xl cursor-pointer" 
                      :class="note.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
@@ -221,7 +222,7 @@
                   </i>
                   <span class="font-medium" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
                 </div>
-                <button class="text-red-500 text-base" @click="removePreNote(i)"><i class="ph ph-trash"></i></button>
+                <button class="text-red-500 text-base" @click="removePreNote(note.id)"><i class="ph ph-trash"></i></button>
               </li>
               <li v-if="preTripNotes.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">
                 請新增行前準備事項！
@@ -238,7 +239,7 @@
 
           <div v-if="currentTab === '行程'">
             <h3 class="text-base font-bold mb-2">今日行程 — {{ days[selectedDay].label }}</h3>
-            <ul class="space-y-2">
+             <ul class="space-y-2">
               <li v-for="(it, idx) in sortedItinerary" :key="it.id" 
                   @click="showLocationOnMap(it)"
                   :class="{'cursor-pointer hover:bg-sky-50 transition border-l-4 border-l-sky-400 pl-3': (it.address || '').trim() !== '', 'border-l-transparent': (it.address || '').trim() === ''}"
@@ -264,13 +265,16 @@
               </li>
             </ul>
             <p v-if="sortedItinerary.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">今日暫無行程</p>
+            
+            <div class="mt-4 pt-3 border-t border-gray-200">
+              <button @click="openItineraryModal(null)" class="w-full text-center py-2 text-sm font-medium text-sky-600 border border-sky-300 bg-sky-50/70 rounded-lg transition hover:bg-sky-100">
+                + 加入新行程項目
+              </button>
+            </div>
           </div>
 
           <div v-if="currentTab === '購物'">
             <h3 class="text-base font-bold mb-2">🛒 購物清單</h3>
-            <div class="flex justify-end mb-3">
-                <button @click="openShoppingModal(null)" class="bg-sky-600 text-white px-3 py-1 rounded-lg text-sm font-medium">+ 新增項目</button>
-            </div>
             <ul class="space-y-2">
               <li v-for="(item, i) in shoppingList" :key="item.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
                 <div class="flex items-start gap-3 flex-1">
@@ -330,7 +334,7 @@
                 <div class="flex items-start gap-3">
                   <i class="ph text-xl cursor-pointer" 
                      :class="e.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
-                     @click="toggleExpenseDone(i)"></i>
+                     @click="toggleExpenseDone(e.id)"></i>
                   <div>
                     <div class="font-medium" :class="{'task-done': e.isDone}">{{ e.name }}</div>
                     <div class="text-xs text-gray-500">{{ e.category }} · {{ e.date }}</div>
@@ -338,7 +342,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                   <div class="font-bold">{{ e.currency }} {{ e.amount }}</div>
-                  <button @click="removeExpense(i)" class="text-red-500"><i class="ph ph-trash"></i></button>
+                  <button @click="removeExpense(e.id)" class="text-red-500"><i class="ph ph-trash"></i></button>
                 </div>
               </li>
               <li v-if="expenses.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無記錄</li>
@@ -486,6 +490,7 @@
   <script>
     const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
     
+    // --- Helper Functions and Constants ---
     const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
     const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
     const initializeListWithIds = (list) => list.map(item => ({ ...item, id: item.id || generateId() }));
@@ -493,48 +498,76 @@
         if (!url) return false;
         return /^(https?:\/\/(www\.)?instagram\.com\/(p|reel)\/)/i.test(url);
     }
+    const INITIAL_ITINERARY = [
+        [
+            { title:'抵達台北・入住酒店、休息', note:'西門町永安棧', time:'', address:'台北市萬華區中華路一段52號' },
+            { title:'西門町輕鬆散步', note:'悠閒行程', time:'18:00', address:'' },
+            { title:'雅香石頭火鍋（晚餐）', note:'必吃排隊店', time:'19:00', address:'台北市萬華區成都路152號' },
+            { title:'南機場夜市', note:'宵夜', time:'21:00', address:'台北市中正區中華路二段307巷' },
+            { title:'返酒店休息', note:'10:30 前休息', time:'23:00', address:'' }
+        ],
+        [
+            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00', address:'108 台灣台北市萬華區中華路二段420號' },
+            { title:'Costco 中和店（續會＋買手信）', note:'購物', time:'14:00', address:'新北市中和區中山路二段347號' },
+            { title:'晚餐：雞湯榮麵食館（17:00 後）', note:'晚餐', time:'17:30', address:'台北市萬華區西昌街202號' },
+            { title:'華西街夜市', note:'逛夜市', time:'19:30', address:'台北市萬華區華西街' },
+            { title:'胖老闆誠意肉粥（宵夜）', note:'宵夜', time:'22:00', address:'台北市萬華區廣州街253號' }
+        ],
+        [
+            { title:'午餐：梁山泊小籠湯包', note:'中午', time:'12:00', address:'台北市萬華區峨眉街22號' },
+            { title:'西門町行下 / Cafe 休息', note:'悠閒午後', time:'14:00', address:'' },
+            { title:'寧夏夜市', note:'晚餐自理', time:'18:30', address:'台北市大同區寧夏路' },
+            { title:'回酒店', note:'休息', time:'21:00', address:'' }
+        ],
+        [
+            { title:'西門町補買手信', note:'購物', time:'11:00', address:'' },
+            { title:'金園排骨（午餐）', note:'午餐', time:'13:00', address:'台北市萬華區漢中街121-1號' },
+            { title:'前往機場（CX443）', note:'搭乘 CX443 回 HKG', time:'15:50', address:'台灣桃園國際機場' }
+        ]
+    ];
+    const INITIAL_FLIGHTS = [
+        { id: 'outbound', date:'2025-12-15', code:'CX400', depTime:'13:00', fromCode:'HKG', fromTerminal:'T1', toCode:'TPE', toTerminal:'T1', arrTime:'14:50', title:'由香港飛往台北', note:'航班前往台北', type: 'outbound' },
+        { id: 'return', date:'2025-12-18', code:'CX443', depTime:'15:50', fromCode:'TPE', fromTerminal:'T1', toCode:'HKG', toTerminal:'T1', arrTime:'18:00', title:'由台北返回香港', note:'回程', type: 'return' }
+    ];
+    const STORAGE_KEY = 'emenu-taipei-data-v7'; // Storage key
 
     createApp({
       setup(){
         const currentTab = ref('行前');
+        const selectedDay = ref(0);
         const days = reactive([
           { week:'Mon', date:'15', label:'12/15 (一)', type: 'flight-out' },
           { week:'Tue', date:'16', label:'12/16 (二)', type: 'stay' },
           { week:'Wed', date:'17', label:'12/17 (三)', type: 'stay' },
           { week:'Thu', date:'18', label:'12/18 (四)', type: 'flight-return' }
         ]);
-        const selectedDay = ref(0);
 
-        const initialItinerary = [
-          [
-            { title:'抵達台北・入住酒店、休息', note:'西門町永安棧', time:'', address:'台北市萬華區中華路一段52號' },
-            { title:'西門町輕鬆散步', note:'悠閒行程', time:'18:00', address:'' },
-            { title:'雅香石頭火鍋（晚餐）', note:'必吃排隊店', time:'19:00', address:'台北市萬華區成都路152號' },
-            { title:'南機場夜市', note:'宵夜', time:'21:00', address:'台北市中正區中華路二段307巷' },
-            { title:'返酒店休息', note:'10:30 前休息', time:'23:00', address:'' }
-          ],
-          [
-            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00', address:'108 台灣台北市萬華區中華路二段420號' },
-            { title:'Costco 中和店（續會＋買手信）', note:'購物', time:'14:00', address:'新北市中和區中山路二段347號' },
-            { title:'晚餐：雞湯榮麵食館（17:00 後）', note:'晚餐', time:'17:30', address:'台北市萬華區西昌街202號' },
-            { title:'華西街夜市', note:'逛夜市', time:'19:30', address:'台北市萬華區華西街' },
-            { title:'胖老闆誠意肉粥（宵夜）', note:'宵夜', time:'22:00', address:'台北市萬華區廣州街253號' }
-          ],
-          [
-            { title:'午餐：梁山泊小籠湯包', note:'中午', time:'12:00', address:'台北市萬華區峨眉街22號' },
-            { title:'西門町行下 / Cafe 休息', note:'悠閒午後', time:'14:00', address:'' },
-            { title:'寧夏夜市', note:'晚餐自理', time:'18:30', address:'台北市大同區寧夏路' },
-            { title:'回酒店', note:'休息', time:'21:00', address:'' }
-          ],
-          [
-            { title:'西門町補買手信', note:'購物', time:'11:00', address:'' },
-            { title:'金園排骨（午餐）', note:'午餐', time:'13:00', address:'台北市萬華區漢中街121-1號' },
-            { title:'前往機場（CX443）', note:'搭乘 CX443 回 HKG', time:'15:50', address:'台灣桃園國際機場' }
-          ]
-        ];
+        const itinerary = reactive(INITIAL_ITINERARY.map(dayItems => initializeListWithIds(dayItems).map(item => ({ ...item, address: item.address || '' }))));
+        const flights = ref(INITIAL_FLIGHTS);
+        const preTripNotes = ref(initializeListWithIds([
+          { name:'兌換台幣', isDone: true },
+          { name:'確認住宿預約單', isDone: false },
+          { name:'購買 SIM 卡', isDone: false },
+          { name:'護照影本備份', isDone: true }
+        ]));
+        const shoppingList = ref(initializeListWithIds([
+          { name:'鳳梨酥 (佳德)', isDone: false, imageURL: '' },
+          { name:'面膜 (藥妝店)', isDone: false, imageURL: '' },
+          { name:'肉乾', isDone: true, imageURL: '' }
+        ]));
+        const expenses = ref([
+          { id: generateId(), name:'雅香火鍋', amount: 300, category:'食物', date: '12/15', isDone:false, currency: 'TWD' },
+          { id: generateId(), name:'Taxi 機場->酒店', amount: 250, category:'交通', date: '12/15', isDone:false, currency: 'TWD' }
+        ]);
+        const infoList = ref(initializeListWithIds([
+          { title:'西門町永安棧 (電話)', note:'+886 2 2352 3090', isDone:false },
+        ]));
         
-        const itinerary = reactive(initialItinerary.map(dayItems => initializeListWithIds(dayItems).map(item => ({ ...item, address: item.address || '' }))));
-
+        // --- Input States ---
+        const newPreNote = ref('');
+        const newExpense = reactive({ name:'', amount:null, currency:'TWD', category:'食物' });
+        
+        // --- Computed Properties ---
         const sortedItinerary = computed(() => {
             const currentDayItinerary = itinerary[selectedDay.value];
             if (!currentDayItinerary || currentDayItinerary.length === 0) return [];
@@ -544,9 +577,46 @@
                 return timeA.localeCompare(timeB);
             });
         });
+        const activeFlight = computed(() => {
+          const dayType = days[selectedDay.value].type;
+          if (dayType === 'flight-out') return flights.value.find(f => f.type === 'outbound');
+          if (dayType === 'flight-return') return flights.value.find(f => f.type === 'return');
+          return null;
+        });
+        const shouldShowFlightCard = computed(() => {
+          const dayType = days[selectedDay.value].type;
+          return (dayType === 'flight-out' || dayType === 'flight-return');
+        });
+        const rate = ref(null);
+        const lastRateUpdate = ref(null);
+        const formattedRate = computed(()=> rate.value !== null ? rate.value : '...');
+        const lastRateUpdateLabel = computed(()=>{
+          if (!lastRateUpdate.value) return '—';
+          return new Date(lastRateUpdate.value).toLocaleTimeString('zh-HK');
+        });
+        const weather = reactive({ temp:'--', desc:'載入中...', rain:0, code:0 });
+        const weatherIconClass = computed(()=>{
+          const c = weather.code || 0;
+          if (c>=95) return 'ph ph-cloud-lightning-rain';
+          if (c>=80) return 'ph ph-cloud-lightning-rain';
+          if (c>=50) return 'ph ph-cloud-rain';
+          if (c>2) return 'ph ph-cloud';
+          return 'ph ph-sun';
+        });
+        const totalExpense = computed(() => {
+            const twdToHkdRate = Number(rate.value) || 0;
+            return expenses.value.reduce((total, e) => {
+                const amount = Number(e.amount) || 0;
+                if (e.currency === 'TWD' && twdToHkdRate > 0) return total + amount * twdToHkdRate;
+                return total + amount;
+            }, 0).toFixed(2);
+        });
 
-        // Map Module Logic
+        // --- Core Logic & API Simulation ---
+
+        // Map Logic
         const selectedMapLocation = ref(null);
+        function selectDay(i){ selectedDay.value = i; selectedMapLocation.value = null; }
         function showLocationOnMap(item) {
             if (item.address && item.address.trim() !== '') {
                 selectedMapLocation.value = { title: item.title, address: item.address, id: item.id };
@@ -557,30 +627,67 @@
         function generateMapLink(address, type) {
             if (!address) return '#';
             const encodedAddress = encodeURIComponent(address);
+            // Simulating Google Maps links
             if (type === 'search') return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
             if (type === 'navigate') return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
             return '#';
         }
 
-        // Active Flight (computed)
-        const flights = ref([
-          { id: 'outbound', date:'2025-12-15', code:'CX400', depTime:'13:00', fromCode:'HKG', fromTerminal:'T1', toCode:'TPE', toTerminal:'T1', arrTime:'14:50', title:'由香港飛往台北', note:'航班前往台北', type: 'outbound' },
-          { id: 'return', date:'2025-12-18', code:'CX443', depTime:'15:50', fromCode:'TPE', fromTerminal:'T1', toCode:'HKG', toTerminal:'T1', arrTime:'18:00', title:'由台北返回香港', note:'回程', type: 'return' }
-        ]);
-        const activeFlight = computed(() => {
-          const dayType = days[selectedDay.value].type;
-          if (dayType === 'flight-out') return flights.value.find(f => f.type === 'outbound');
-          if (dayType === 'flight-return') return flights.value.find(f => f.type === 'return');
-          return null;
-        });
-        const shouldShowFlightCard = computed(() => {
-          const dayType = days[selectedDay.value].type;
-          return (currentTab.value === '行前' || currentTab.value === '行程') && (dayType === 'flight-out' || dayType === 'flight-return');
-        });
+        // List Manipulations
+        function addPreNote(){ 
+            if (!newPreNote.value.trim()) return; 
+            preTripNotes.value.push({ id:generateId(), name:newPreNote.value.trim(), isDone:false }); 
+            newPreNote.value='';
+            saveAll();
+        }
+        function removePreNote(idToRemove){ 
+            const index = preTripNotes.value.findIndex(i => i.id === idToRemove);
+            if(index !== -1) preTripNotes.value.splice(index,1); 
+            saveAll();
+        }
+        function addExpense(){
+            if (!newExpense.name.trim() || !newExpense.amount) return;
+            const d = new Date();
+            const dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
+            expenses.value.unshift({ 
+                id: generateId(), 
+                name: newExpense.name.trim(), 
+                amount: Number(newExpense.amount), 
+                category: newExpense.category, 
+                date: dateLabel, 
+                isDone: false, 
+                currency: newExpense.currency 
+            });
+            newExpense.name = ''; newExpense.amount = null; newExpense.currency = 'TWD'; newExpense.category = '食物';
+            saveAll();
+        }
+        function removeExpense(idToRemove){ 
+            const index = expenses.value.findIndex(i => i.id === idToRemove);
+            if(index !== -1) expenses.value.splice(index,1);
+            saveAll();
+        }
+        function toggleExpenseDone(idToToggle){ 
+            const expense = expenses.value.find(e => e.id === idToToggle);
+            if(expense) expense.isDone = !expense.isDone;
+            saveAll();
+        }
+        function removeInfo(idToRemove) {
+            if (!confirm('確定刪除此資訊項目嗎？')) return;
+            const index = infoList.value.findIndex(i => i.id === idToRemove);
+            if (index !== -1) { infoList.value.splice(index, 1); saveAll(); }
+        }
 
-        // Modals Logic
+        // Modals Logic - General
         const itineraryModalOpen = ref(false);
         const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', address: '', dayIndex: null });
+        const flightModalOpen = ref(false);
+        const newFlight = reactive({ id: null, type: 'outbound', date: '', code: '', depTime: '', arrTime: '', fromCode: '', fromTerminal: '', toCode: '', toTerminal: '', title: '', note: '' });
+        const shoppingModalOpen = ref(false);
+        const newShoppingItem = reactive({ id: null, name: '', isDone: false, imageURL: '' });
+        const infoModalOpen = ref(false);
+        const newInfoItem = reactive({ id: null, title: '', note: '', isDone: false });
+
+        // Modals Logic - Itinerary
         function resetItineraryModal() { Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', address: '', dayIndex: selectedDay.value }); }
         function openItineraryModal(item = null) {
             resetItineraryModal();
@@ -588,7 +695,10 @@
             newItineraryItem.dayIndex = selectedDay.value;
             itineraryModalOpen.value = true;
         }
-        function closeItineraryModal() { itineraryModalOpen.value = false; }
+        function closeItineraryModal() { 
+            itineraryModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveItineraryItem() {
             if (!newItineraryItem.title.trim()) return;
             const dayItems = itinerary[newItineraryItem.dayIndex];
@@ -602,10 +712,7 @@
             const index = dayItems.findIndex(i => i.id === itemToSave.id);
             if (index !== -1) dayItems.splice(index, 1, itemToSave);
             else dayItems.push(itemToSave);
-            // If map is showing this item, update it
-            if (selectedMapLocation.value && selectedMapLocation.value.id === itemToSave.id) {
-                 showLocationOnMap(itemToSave);
-            }
+            if (selectedMapLocation.value && selectedMapLocation.value.id === itemToSave.id) showLocationOnMap(itemToSave);
             closeItineraryModal();
             saveAll();
         }
@@ -619,26 +726,28 @@
                 saveAll();
             }
         }
-
-        const flightModalOpen = ref(false);
-        const newFlight = reactive({ id: null, type: 'outbound', date: '', code: '', depTime: '', arrTime: '', fromCode: '', fromTerminal: '', toCode: '', toTerminal: '', title: '', note: '' });
+        
+        // Modals Logic - Flight
         function openFlightModal(flightId = null){
-             // Reset
-             Object.assign(newFlight, { id: null, type: 'outbound', date: days[selectedDay.value]?.date ? `2025-12-${days[selectedDay.value].date.padStart(2, '0')}` : '2025-12-15', code: '', depTime: '', arrTime: '', fromCode: '', fromTerminal: '', toCode: '', toTerminal: '', title: '', note: '' });
+             const defaultDate = days[selectedDay.value]?.date ? `2025-12-${days[selectedDay.value].date.padStart(2, '0')}` : '2025-12-15';
              const dayType = days[selectedDay.value]?.type;
-             if (dayType === 'flight-out') newFlight.type = 'outbound';
-             else if (dayType === 'flight-return') newFlight.type = 'return';
+             const defaultType = (dayType === 'flight-return') ? 'return' : 'outbound';
+
+             Object.assign(newFlight, { id: null, type: defaultType, date: defaultDate, code: '', depTime: '', arrTime: '', fromCode: '', fromTerminal: '', toCode: '', toTerminal: '', title: '', note: '' });
 
             if(flightId){
                 const flightToEdit = flights.value.find(f => f.id === flightId);
                 if(flightToEdit){
                     Object.assign(newFlight, deepClone(flightToEdit));
-                    newFlight.id = flightId;
+                    newFlight.id = flightId; 
                 }
             }
             flightModalOpen.value = true;
         }
-        function closeFlightModal(){ flightModalOpen.value = false; }
+        function closeFlightModal(){ 
+            flightModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveFlight(){
             if (!newFlight.code || !newFlight.depTime || !newFlight.type) return;
             const dateStr = new Date(newFlight.date).toISOString().split('T')[0];
@@ -646,31 +755,25 @@
             const index = flights.value.findIndex(f => f.id === newFlight.type);
             if (index !== -1) flights.value.splice(index, 1, flightToSave);
             else flights.value.push(flightToSave);
+            
+            // Sync flight type to days array
             const dayIndex = days.findIndex(d => d.date.padStart(2, '0') === new Date(dateStr).getDate().toString().padStart(2, '0'));
             if (dayIndex !== -1) days[dayIndex].type = newFlight.type;
+            
             closeFlightModal();
             saveAll();
         }
-        function removeFlight(flightId){
-             if(confirm('確定要刪除此航班資料嗎？')){
-                const index = flights.value.findIndex(f => f.id === flightId);
-                if(index !== -1){
-                    const dayIndex = days.findIndex(d => d.type === flightId);
-                    if (dayIndex !== -1) days[dayIndex].type = 'stay';
-                    flights.value.splice(index, 1);
-                    saveAll();
-                }
-            }
-        }
 
-        const shoppingModalOpen = ref(false);
-        const newShoppingItem = reactive({ id: null, name: '', isDone: false, imageURL: '' });
+        // Modals Logic - Shopping
         function openShoppingModal(item = null) {
             Object.assign(newShoppingItem, { id: null, name: '', isDone: false, imageURL: '' });
             if (item) Object.assign(newShoppingItem, deepClone(item));
             shoppingModalOpen.value = true;
         }
-        function closeShoppingModal() { shoppingModalOpen.value = false; }
+        function closeShoppingModal() { 
+            shoppingModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveShoppingItem() {
             if (!newShoppingItem.name.trim()) return;
             const itemToSave = { ...deepClone(newShoppingItem), id: newShoppingItem.id || generateId() };
@@ -680,20 +783,17 @@
             closeShoppingModal();
             saveAll();
         }
-        function removeShoppingItem(idToRemove) {
-            if (!confirm('確定刪除此購物項目嗎？')) return;
-            const index = shoppingList.value.findIndex(i => i.id === idToRemove);
-            if (index !== -1) { shoppingList.value.splice(index, 1); saveAll(); }
-        }
 
-        const infoModalOpen = ref(false);
-        const newInfoItem = reactive({ id: null, title: '', note: '', isDone: false });
+        // Modals Logic - Info
         function openInfoModal(item = null) {
             Object.assign(newInfoItem, { id: null, title: '', note: '', isDone: false });
             if (item) Object.assign(newInfoItem, deepClone(item));
             infoModalOpen.value = true;
         }
-        function closeInfoModal() { infoModalOpen.value = false; }
+        function closeInfoModal() { 
+            infoModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveInfoItem() {
             if (!newInfoItem.title.trim()) return;
             const itemToSave = { ...deepClone(newInfoItem), id: newInfoItem.id || generateId() };
@@ -703,96 +803,40 @@
             closeInfoModal();
             saveAll();
         }
-        function removeInfo(idToRemove) {
-            if (!confirm('確定刪除此資訊項目嗎？')) return;
-            const index = infoList.value.findIndex(i => i.id === idToRemove);
-            if (index !== -1) { infoList.value.splice(index, 1); saveAll(); }
-        }
 
-        // lists
-        const preTripNotes = ref(initializeListWithIds([
-          { name:'兌換台幣', isDone: true },
-          { name:'確認住宿預約單', isDone: false },
-          { name:'購買 SIM 卡', isDone: false },
-          { name:'護照影本備份', isDone: true }
-        ]));
-        const newPreNote = ref('');
-        const shoppingList = ref(initializeListWithIds([
-          { name:'鳳梨酥 (佳德)', isDone: false, imageURL: '' },
-          { name:'面膜 (藥妝店)', isDone: false, imageURL: '' },
-          { name:'肉乾', isDone: true, imageURL: '' }
-        ]));
-        const expenses = ref([
-          { id: Date.now()+1, name:'雅香火鍋', amount: 300, category:'食物', date: '12/15', isDone:false, currency: 'TWD' },
-          { id: Date.now()+2, name:'Taxi 機場->酒店', amount: 250, category:'交通', date: '12/15', isDone:false, currency: 'TWD' }
-        ]);
-        const newExpense = reactive({ name:'', amount:null, currency:'TWD', category:'食物' });
-        const infoList = ref(initializeListWithIds([
-          { title:'西門町永安棧 (電話)', note:'+886 2 2352 3090', isDone:false },
-        ]));
-        const newInfoTitle = ref('');
-
-        const totalExpense = computed(() => {
-            const twdToHkdRate = Number(rate.value) || 0;
-            return expenses.value.reduce((total, e) => {
-                const amount = Number(e.amount) || 0;
-                if (e.currency === 'TWD' && twdToHkdRate > 0) return total + amount * twdToHkdRate;
-                return total + amount;
-            }, 0).toFixed(2);
-        });
-
-        // weather & rate
-        const weather = reactive({ temp:'--', desc:'載入中...', rain:0, code:0 });
-        const weatherIconClass = computed(()=>{
-          const c = weather.code || 0;
-          if (c>=95) return 'ph ph-cloud-lightning-rain';
-          if (c>=80) return 'ph ph-cloud-lightning-rain';
-          if (c>=50) return 'ph ph-cloud-rain';
-          if (c>2) return 'ph ph-cloud';
-          return 'ph ph-sun';
-        });
-        const rate = ref(null);
-        const lastRateUpdate = ref(null);
-        const formattedRate = computed(()=> rate.value !== null ? rate.value : '...');
-        const lastRateUpdateLabel = computed(()=>{
-          if (!lastRateUpdate.value) return '—';
-          return new Date(lastRateUpdate.value).toLocaleTimeString('zh-HK');
-        });
-        
-        // Simple list functions
-        function selectDay(i){ selectedDay.value = i; selectedMapLocation.value = null; }
-        function addPreNote(){ if (!newPreNote.value.trim()) return; preTripNotes.value.push({ id:generateId(), name:newPreNote.value.trim(), isDone:false }); newPreNote.value=''; }
-        function removePreNote(i){ preTripNotes.value.splice(i,1); }
-        function addExpense(){
-          if (!newExpense.name.trim() || !newExpense.amount) return;
-          const d = new Date();
-          const dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
-          expenses.value.unshift({ id: generateId(), name: newExpense.name.trim(), amount: Number(newExpense.amount), category: newExpense.category, date: dateLabel, isDone: false, currency: newExpense.currency });
-          newExpense.name = ''; newExpense.amount = null; newExpense.currency = 'TWD'; newExpense.category = '食物';
-          saveAll();
-        }
-        function removeExpense(i){ expenses.value.splice(i,1); saveAll(); }
-        function toggleExpenseDone(i){ expenses.value[i].isDone = !expenses.value[i].isDone; saveAll(); }
-        function addInfoWithNote(){
-          const title = (newInfoTitle.value||'').trim();
-          if (!title) return;
-          const note = prompt('請輸入備註', '');
-          infoList.value.unshift({ title, note: note || '', isDone:false, id: generateId() });
-          newInfoTitle.value = '';
-        }
-
-        // openAdd: smart behaviour
+        // 🎯 Smart Add Button 邏輯調整
         function openAddModal(){
-            if (shouldShowFlightCard.value) { const flightId = activeFlight.value ? activeFlight.value.id : null; openFlightModal(flightId); return; }
-          if (currentTab.value === '行前'){ if (newPreNote.value) addPreNote(); else { currentTab.value = '行程'; openItineraryModal(null); } }
-          else if (currentTab.value === '行程'){ openItineraryModal(null); }
-          else if (currentTab.value === '購物'){ openShoppingModal(null); }
-          else if (currentTab.value === '記帳'){ if (newExpense.name && newExpense.amount) addExpense(); }
-          else if (currentTab.value === '資訊'){ openInfoModal(null); }
-          else { currentTab.value = '行程'; }
+            // 1. 檢查是否為航班日 (Day 1, Day 4)
+            if (shouldShowFlightCard.value && currentTab.value === '行程') { 
+                const flightId = activeFlight.value ? activeFlight.value.id : null; 
+                openFlightModal(flightId); 
+                return; 
+            }
+            
+            // 2. 處理其他標籤的通用新增
+            if (currentTab.value === '行前'){ 
+                if (newPreNote.value) addPreNote(); 
+                else alert('請輸入行前準備事項');
+            }
+            else if (currentTab.value === '行程'){ 
+                // Day 2/3 (非航班日) 執行此處
+                openItineraryModal(null); 
+            }
+            else if (currentTab.value === '購物'){ 
+                // 購物頁面只透過頂部通用按鈕新增
+                openShoppingModal(null); 
+            }
+            else if (currentTab.value === '記帳'){ 
+                if (newExpense.name && newExpense.amount) addExpense(); 
+                else alert('請輸入消費名稱和金額');
+            }
+            else if (currentTab.value === '資訊'){ 
+                openInfoModal(null); 
+            }
+            else { currentTab.value = '行程'; }
         }
 
-        // fetch rate & weather
+        // External Data Fetching
         async function fetchRate(){
           const API_URL = 'https://open.er-api.com/v6/latest/TWD';
           try {
@@ -824,7 +868,6 @@
             }
           } catch(e){ console.warn('weather fail', e); weather.desc='無法取得'; }
         }
-
         function describeWeather(code){
           if (code >= 95) return '雷暴';
           if (code >= 80) return '陣雨';
@@ -838,8 +881,7 @@
           return '晴朗';
         }
 
-        // Storage
-        const STORAGE_KEY = 'emenu-taipei-data-v7'; // Updated
+        // --- Local Storage Management ---
         function saveAll(){
           const payload = {
             currentTab: currentTab.value,
@@ -886,6 +928,7 @@
           } catch(e){ console.warn('load fail', e); }
         }
 
+        // --- Lifecycle Hooks and Watchers ---
         onMounted(()=>{
           loadAll();
           fetchRate(); fetchWeather();
@@ -896,6 +939,7 @@
           saveAll();
         }, { deep:true });
         
+        // --- Expose to Template ---
         return {
           currentTab, days, selectedDay, selectDay,
           preTripNotes, newPreNote, addPreNote, removePreNote,
@@ -905,7 +949,7 @@
           expenses, newExpense, addExpense, removeExpense, toggleExpenseDone, totalExpense,
           infoList, infoModalOpen, newInfoItem, openInfoModal, closeInfoModal, saveInfoItem, removeInfo,
           activeFlight, shouldShowFlightCard, weather, weatherIconClass, rate, formattedRate, lastRateUpdateLabel,
-          openAddModal, flightModalOpen, newFlight, openFlightModal, closeFlightModal, saveFlight, removeFlight,
+          openAddModal, flightModalOpen, newFlight, openFlightModal, closeFlightModal, saveFlight, 
         };
       }
     }).mount('#app');
