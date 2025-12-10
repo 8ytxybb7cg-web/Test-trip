@@ -187,6 +187,36 @@
               </div>
             </div>
         </transition>
+        
+        <transition name="fade">
+            <div v-if="selectedMapLocation" 
+                 class="glass-card !p-4 bg-white/90">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="text-sm font-bold text-gray-800 flex items-center">
+                        <i class="ph ph-map-pin-line text-xl mr-2 text-red-500"></i>
+                        地圖定位: {{ selectedMapLocation.title }}
+                    </div>
+                    <button @click="selectedMapLocation = null" class="text-gray-500 hover:text-red-500 text-lg"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="relative w-full h-32 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center mb-3">
+                    <i class="ph ph-map-trifold text-4xl text-gray-400 absolute"></i>
+                    <p class="text-sm text-gray-600 absolute bottom-2">定位於: {{ selectedMapLocation.address }}</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank"
+                       class="flex-1 px-3 py-2 text-sm text-center font-semibold text-sky-600 bg-sky-100/70 rounded-lg border border-sky-200 hover:bg-sky-200 transition">
+                        <i class="ph ph-globe-hemisphere-west mr-1"></i> 在 Google 地圖中打開
+                    </a>
+                    <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank"
+                       class="flex-1 px-3 py-2 text-sm text-center font-semibold text-white bg-emerald-500 rounded-lg border border-emerald-600 hover:bg-emerald-600 transition">
+                        <i class="ph ph-navigation-arrow mr-1"></i> 開始導航
+                    </a>
+                </div>
+            </div>
+        </transition>
+
       </div>
 
       <div class="flex justify-end mb-3">
@@ -243,6 +273,10 @@
                 <div class="flex-1">
                   <div class="font-medium">{{ it.title }}</div>
                   <div class="text-xs text-gray-500">{{ it.note }}</div>
+                  <div v-if="it.address" @click="showLocationOnMap(it)" class="text-xs mt-1 text-sky-600 font-medium cursor-pointer flex items-center hover:opacity-80 transition">
+                      <i class="ph ph-map-pin text-sm mr-1"></i>
+                      <span>{{ it.address }}</span>
+                  </div>
                 </div>
      
                 <div class="flex items-center gap-2">
@@ -475,7 +509,8 @@
                         <input v-model="newItineraryItem.title" class="flex-1 p-2 rounded-lg border bg-white" placeholder="行程標題 (例如：故宮博物館)">
                         <input v-model="newItineraryItem.time" type="time" class="w-24 p-2 rounded-lg border bg-white" placeholder="時間">
                     </div>
-                    <textarea v-model="newItineraryItem.note" class="w-full p-2 rounded-lg border bg-white" rows="3" placeholder="備註/地址/細節..."></textarea>
+                    <input v-model="newItineraryItem.address" class="w-full p-2 rounded-lg border bg-white" placeholder="Google Map 地址或地點名稱 (選填)">
+                    <textarea v-model="newItineraryItem.note" class="w-full p-2 rounded-lg border bg-white" rows="3" placeholder="備註/細節..."></textarea>
                 </div>
 
                 <div class="mt-5 flex justify-end gap-3">
@@ -582,36 +617,37 @@
         ]);
         const selectedDay = ref(0);
 
-        // itinerary (Initialized with IDs)
+        // itinerary (Initialized with IDs and new address field)
         const initialItinerary = [
           [
-            { title:'抵達台北・入住酒店、休息', note:'西門町永安棧', time:'' },
-            { title:'西門町輕鬆散步', note:'悠閒行程', time:'18:00' },
-            { title:'雅香石頭火鍋（晚餐）', note:'必吃排隊店', time:'19:00' },
-            { title:'南機場夜市', note:'宵夜', time:'21:00' },
-            { title:'返酒店休息', note:'10:30 前休息', time:'23:00' }
+            // 🎯 新增地址欄位
+            { title:'抵達台北・入住酒店、休息', note:'西門町永安棧', time:'', address:'台北市萬華區中華路一段52號' },
+            { title:'西門町輕鬆散步', note:'悠閒行程', time:'18:00', address:'' },
+            { title:'雅香石頭火鍋（晚餐）', note:'必吃排隊店', time:'19:00', address:'台北市萬華區成都路152號' },
+            { title:'南機場夜市', note:'宵夜', time:'21:00', address:'台北市中正區中華路二段307巷' },
+            { title:'返酒店休息', note:'10:30 前休息', time:'23:00', address:'' }
           ],
           [
-            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00' },
-            { title:'Costco 中和店（續會＋買手信）', note:'購物', time:'14:00' },
-            { title:'晚餐：雞湯榮麵食館（17:00 後）', note:'晚餐', time:'17:30' },
-            { title:'華西街夜市', note:'逛夜市', time:'19:30' },
-            { title:'胖老闆誠意肉粥（宵夜）', note:'宵夜', time:'22:00' }
+            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00', address:'台北市萬華區中華路二段420號' },
+            { title:'Costco 中和店（續會＋買手信）', note:'購物', time:'14:00', address:'新北市中和區中山路二段347號' },
+            { title:'晚餐：雞湯榮麵食館（17:00 後）', note:'晚餐', time:'17:30', address:'台北市萬華區西昌街202號' },
+            { title:'華西街夜市', note:'逛夜市', time:'19:30', address:'台北市萬華區華西街' },
+            { title:'胖老闆誠意肉粥（宵夜）', note:'宵夜', time:'22:00', address:'台北市萬華區廣州街253號' }
           ],
           [
-            { title:'午餐：梁山泊小籠湯包', note:'中午', time:'12:00' },
-            { title:'西門町行下 / Cafe 休息', note:'悠閒午後', time:'14:00' },
-            { title:'寧夏夜市', note:'晚餐自理', time:'18:30' },
-            { title:'回酒店', note:'休息', time:'21:00' }
+            { title:'午餐：梁山泊小籠湯包', note:'中午', time:'12:00', address:'台北市萬華區峨眉街22號' },
+            { title:'西門町行下 / Cafe 休息', note:'悠閒午後', time:'14:00', address:'' },
+            { title:'寧夏夜市', note:'晚餐自理', time:'18:30', address:'台北市大同區寧夏路' },
+            { title:'回酒店', note:'休息', time:'21:00', address:'' }
           ],
           [
-            { title:'西門町補買手信', note:'購物', time:'11:00' },
-            { title:'金園排骨（午餐）', note:'午餐', time:'13:00' },
-            { title:'前往機場（CX443）', note:'搭乘 CX443 回 HKG', time:'15:50' }
+            { title:'西門町補買手信', note:'購物', time:'11:00', address:'' },
+            { title:'金園排骨（午餐）', note:'午餐', time:'13:00', address:'台北市萬華區漢中街121-1號' },
+            { title:'前往機場（CX443）', note:'搭乘 CX443 回 HKG', time:'15:50', address:'台灣桃園國際機場' }
           ]
         ];
         
-        const itinerary = reactive(initialItinerary.map(dayItems => initializeListWithIds(dayItems)));
+        const itinerary = reactive(initialItinerary.map(dayItems => initializeListWithIds(dayItems).map(item => ({ ...item, address: item.address || '' }))));
 
         const sortedItinerary = computed(() => {
             const currentDayItinerary = itinerary[selectedDay.value];
@@ -626,10 +662,39 @@
         });
 
         const itineraryModalOpen = ref(false);
-        const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', dayIndex: null });
+        // 🎯 新增 address 欄位
+        const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', address: '', dayIndex: null });
+
+        // 🎯 新增 Map State 及相關邏輯
+        const selectedMapLocation = ref(null); // { title: string, address: string }
+
+        function showLocationOnMap(item) {
+            if (item.address) {
+                selectedMapLocation.value = { 
+                    title: item.title, 
+                    address: item.address,
+                    id: item.id
+                };
+            }
+        }
+        
+        function generateMapLink(address, type) {
+            if (!address) return '#';
+            const encodedAddress = encodeURIComponent(address);
+            // type: 'search' (for locating/viewing), 'navigate' (for directions)
+            if (type === 'search') {
+                return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+            } else if (type === 'navigate') {
+                // Direction link, starting point is current location (omitted)
+                return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+            }
+            return '#';
+        }
+
 
         function resetItineraryModal() {
-            Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', dayIndex: selectedDay.value });
+            // 🎯 重設時加入 address
+            Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', address: '', dayIndex: selectedDay.value });
         }
         function openItineraryModal(item = null) {
             resetItineraryModal();
@@ -649,6 +714,7 @@
                 title: newItineraryItem.title.trim(), 
                 note: newItineraryItem.note.trim(), 
                 time: newItineraryItem.time.trim(),
+                address: newItineraryItem.address.trim(), // 🎯 儲存 address
             };
 
             const index = dayItems.findIndex(i => i.id === itemToSave.id);
@@ -660,6 +726,12 @@
                 // Add new item
                 dayItems.push(itemToSave);
             }
+            
+            // 🎯 如果目前地圖是這個項目，則更新地圖顯示
+            if (selectedMapLocation.value && selectedMapLocation.value.id === itemToSave.id) {
+                showLocationOnMap(itemToSave);
+            }
+
             closeItineraryModal();
             saveAll();
         }
@@ -669,6 +741,10 @@
             const index = dayItems.findIndex(i => i.id === idToRemove);
             if (index !== -1) {
                 dayItems.splice(index, 1);
+                // 🎯 移除後清除地圖顯示
+                if (selectedMapLocation.value && selectedMapLocation.value.id === idToRemove) {
+                    selectedMapLocation.value = null;
+                }
                 saveAll();
             }
         }
@@ -901,7 +977,10 @@
         });
         
         // functions for lists
-        function selectDay(i){ selectedDay.value = i;
+        function selectDay(i){ 
+            selectedDay.value = i; 
+            // 🎯 切換日曆時隱藏地圖
+            selectedMapLocation.value = null;
         }
         function addPreNote(){ if (!newPreNote.value.trim()) return; preTripNotes.value.push({ id:generateId(), name:newPreNote.value.trim(), isDone:false }); newPreNote.value='';
         }
@@ -1013,7 +1092,7 @@
         }
 
         // localStorage persistence
-        const STORAGE_KEY = 'emenu-taipei-data-v5'; // Update version
+        const STORAGE_KEY = 'emenu-taipei-data-v6'; // 🎯 Update version for new structure
         function saveAll(){
           const payload = {
             currentTab: currentTab.value,
@@ -1040,10 +1119,14 @@
             if (p.currentTab) currentTab.value = p.currentTab;
             if (typeof p.selectedDay === 'number') selectedDay.value = p.selectedDay;
             
-            // Itinerary: Ensure IDs are present
+            // Itinerary: Ensure IDs and new 'address' field are present
             if (p.itinerary && Array.isArray(p.itinerary)){
               for (let i=0;i<4;i++){
-                const loadedItems = (p.itinerary[i] || []).map(item => ({...item, id: item.id || generateId()}));
+                const loadedItems = (p.itinerary[i] || []).map(item => ({
+                    ...item, 
+                    id: item.id || generateId(),
+                    address: item.address || '' // 🎯 Load address
+                }));
                 itinerary[i].splice(0, itinerary[i].length, ...loadedItems);
               }
             }
@@ -1097,6 +1180,8 @@
           // Itinerary (New)
           itinerary, sortedItinerary,
           itineraryModalOpen, newItineraryItem, openItineraryModal, closeItineraryModal, saveItineraryItem, removeItineraryItem,
+          // 🎯 Map Logic
+          selectedMapLocation, showLocationOnMap, generateMapLink,
 
           // Shopping (New)
           shoppingList, shoppingModalOpen, newShoppingItem, openShoppingModal, closeShoppingModal, saveShoppingItem, removeShoppingItem,
