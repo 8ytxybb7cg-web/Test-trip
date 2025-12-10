@@ -47,7 +47,7 @@
         border: 1px solid rgba(255,255,255,0.35);
     }
 
-    /* ⬇️ 這是修改過的地方：將圖示大小從 2.5rem 調整成 1.875rem (0.75倍) */
+    /* ⬇️ Dock 圖示大小 (1.875rem) */
     .iphone-dock button i { font-size: 1.875rem; }
 
     /* 卡片細節 */
@@ -85,9 +85,9 @@
       </div>
 
       <div class="mb-4">
-        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
           <button @click="currentTab = '行前'" 
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
+                  class="flex-shrink-0 w-16 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
                   :class="currentTab === '行前' ?
                   'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
              <i class="ph ph-list text-xl mb-1"></i>
@@ -96,7 +96,7 @@
           
           <button v-for="(d, i) in days" :key="i"
                   @click="selectDay(i); currentTab = '行程'"
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
+                  class="flex-shrink-0 w-16 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
                   :class="selectedDay === i && currentTab === '行程' ?
                   'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 text-gray-600 border border-white/40'">
             <span class="text-[10px] font-semibold text-sky-600/90 mb-0.5">Day {{ i + 1 }}</span>
@@ -205,7 +205,7 @@
 
       <div class="flex justify-end mb-3">
         <button @click="openAddModal" class="bg-sky-600 
-        text-white px-4 py-2 rounded-lg shadow">+ 新增</button>
+        text-white px-4 py-2 rounded-lg shadow font-medium text-sm">+ 新增</button>
       </div>
 
       <div class="rounded-2xl p-3 bg-white/85 border border-white/30 backdrop-blur shadow">
@@ -239,7 +239,7 @@
 
           <div v-if="currentTab === '行程'">
             <h3 class="text-base font-bold mb-2">今日行程 — {{ days[selectedDay].label }}</h3>
-            <ul class="space-y-2">
+             <ul class="space-y-2">
               <li v-for="(it, idx) in sortedItinerary" :key="it.id" 
                   @click="showLocationOnMap(it)"
                   :class="{'cursor-pointer hover:bg-sky-50 transition border-l-4 border-l-sky-400 pl-3': (it.address || '').trim() !== '', 'border-l-transparent': (it.address || '').trim() === ''}"
@@ -265,13 +265,16 @@
               </li>
             </ul>
             <p v-if="sortedItinerary.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">今日暫無行程</p>
+            
+            <div class="mt-4 pt-3 border-t border-gray-200">
+              <button @click="openItineraryModal(null)" class="w-full text-center py-2 text-sm font-medium text-sky-600 border border-sky-300 bg-sky-50/70 rounded-lg transition hover:bg-sky-100">
+                + 加入新行程項目
+              </button>
+            </div>
           </div>
 
           <div v-if="currentTab === '購物'">
             <h3 class="text-base font-bold mb-2">🛒 購物清單</h3>
-            <div class="flex justify-end mb-3">
-                <button @click="openShoppingModal(null)" class="bg-sky-600 text-white px-3 py-1 rounded-lg text-sm font-medium">+ 新增項目</button>
-            </div>
             <ul class="space-y-2">
               <li v-for="(item, i) in shoppingList" :key="item.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
                 <div class="flex items-start gap-3 flex-1">
@@ -582,7 +585,7 @@
         });
         const shouldShowFlightCard = computed(() => {
           const dayType = days[selectedDay.value].type;
-          return (currentTab.value === '行前' || currentTab.value === '行程') && (dayType === 'flight-out' || dayType === 'flight-return');
+          return (dayType === 'flight-out' || dayType === 'flight-return');
         });
         const rate = ref(null);
         const lastRateUpdate = ref(null);
@@ -692,7 +695,10 @@
             newItineraryItem.dayIndex = selectedDay.value;
             itineraryModalOpen.value = true;
         }
-        function closeItineraryModal() { itineraryModalOpen.value = false; }
+        function closeItineraryModal() { 
+            itineraryModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveItineraryItem() {
             if (!newItineraryItem.title.trim()) return;
             const dayItems = itinerary[newItineraryItem.dayIndex];
@@ -723,7 +729,6 @@
         
         // Modals Logic - Flight
         function openFlightModal(flightId = null){
-             // Reset & set default date based on selected day
              const defaultDate = days[selectedDay.value]?.date ? `2025-12-${days[selectedDay.value].date.padStart(2, '0')}` : '2025-12-15';
              const dayType = days[selectedDay.value]?.type;
              const defaultType = (dayType === 'flight-return') ? 'return' : 'outbound';
@@ -734,12 +739,15 @@
                 const flightToEdit = flights.value.find(f => f.id === flightId);
                 if(flightToEdit){
                     Object.assign(newFlight, deepClone(flightToEdit));
-                    newFlight.id = flightId; // id should be type ('outbound' or 'return')
+                    newFlight.id = flightId; 
                 }
             }
             flightModalOpen.value = true;
         }
-        function closeFlightModal(){ flightModalOpen.value = false; }
+        function closeFlightModal(){ 
+            flightModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveFlight(){
             if (!newFlight.code || !newFlight.depTime || !newFlight.type) return;
             const dateStr = new Date(newFlight.date).toISOString().split('T')[0];
@@ -762,7 +770,10 @@
             if (item) Object.assign(newShoppingItem, deepClone(item));
             shoppingModalOpen.value = true;
         }
-        function closeShoppingModal() { shoppingModalOpen.value = false; }
+        function closeShoppingModal() { 
+            shoppingModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveShoppingItem() {
             if (!newShoppingItem.name.trim()) return;
             const itemToSave = { ...deepClone(newShoppingItem), id: newShoppingItem.id || generateId() };
@@ -779,7 +790,10 @@
             if (item) Object.assign(newInfoItem, deepClone(item));
             infoModalOpen.value = true;
         }
-        function closeInfoModal() { infoModalOpen.value = false; }
+        function closeInfoModal() { 
+            infoModalOpen.value = false; 
+            if (document.activeElement) { document.activeElement.blur(); } // 🎯 修正縮放問題
+        }
         function saveInfoItem() {
             if (!newInfoItem.title.trim()) return;
             const itemToSave = { ...deepClone(newInfoItem), id: newInfoItem.id || generateId() };
@@ -790,27 +804,36 @@
             saveAll();
         }
 
-        // Smart Add Button
+        // 🎯 Smart Add Button 邏輯調整
         function openAddModal(){
-            if (shouldShowFlightCard.value) { 
+            // 1. 檢查是否為航班日 (Day 1, Day 4)
+            if (shouldShowFlightCard.value && currentTab.value === '行程') { 
                 const flightId = activeFlight.value ? activeFlight.value.id : null; 
                 openFlightModal(flightId); 
                 return; 
             }
-          if (currentTab.value === '行前'){ 
-              // If input is filled, add it; otherwise switch to Itinerary and open its modal
-              if (newPreNote.value) addPreNote(); 
-              else { currentTab.value = '行程'; openItineraryModal(null); } 
-          }
-          else if (currentTab.value === '行程'){ openItineraryModal(null); }
-          else if (currentTab.value === '購物'){ openShoppingModal(null); }
-          else if (currentTab.value === '記帳'){ 
-              // If expense form is filled, add it
-              if (newExpense.name && newExpense.amount) addExpense(); 
-              else alert('請輸入消費名稱和金額');
-          }
-          else if (currentTab.value === '資訊'){ openInfoModal(null); }
-          else { currentTab.value = '行程'; }
+            
+            // 2. 處理其他標籤的通用新增
+            if (currentTab.value === '行前'){ 
+                if (newPreNote.value) addPreNote(); 
+                else alert('請輸入行前準備事項');
+            }
+            else if (currentTab.value === '行程'){ 
+                // Day 2/3 (非航班日) 執行此處
+                openItineraryModal(null); 
+            }
+            else if (currentTab.value === '購物'){ 
+                // 購物頁面只透過頂部通用按鈕新增
+                openShoppingModal(null); 
+            }
+            else if (currentTab.value === '記帳'){ 
+                if (newExpense.name && newExpense.amount) addExpense(); 
+                else alert('請輸入消費名稱和金額');
+            }
+            else if (currentTab.value === '資訊'){ 
+                openInfoModal(null); 
+            }
+            else { currentTab.value = '行程'; }
         }
 
         // External Data Fetching
@@ -839,7 +862,6 @@
               if (data.hourly && data.hourly.precipitation_probability){
                 const nowTime = data.current_weather.time.slice(0, 13);
                 const nowIdx = data.hourly.time.findIndex(t => t.startsWith(nowTime));
-                // Use the precipitation probability for the current hour, or the first one if current time is not found
                 const prob = (nowIdx >= 0) ? data.hourly.precipitation_probability[nowIdx] : (data.hourly.precipitation_probability[0] || 0);
                 weather.rain = Math.round(prob);
               } else weather.rain = 0;
