@@ -112,8 +112,11 @@
 
       <div class="space-y-4 mb-4">
         <div class="glass-card">
+          <div class="flex justify-end mb-2">
+             <span class="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-1 rounded-md border border-sky-200 inline-block">📍 台北市</span>
+          </div>
     
-            <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between">
             <div class="flex items-baseline gap-3">
               <div class="text-3xl font-bold text-gray-800">{{ weather.temp }}°</div>
               <div class="text-xs text-gray-600">
@@ -269,8 +272,15 @@
                   </i>
                   <div class="flex-1">
                     <div class="font-medium" :class="{'task-done': item.isDone, 'text-gray-900': !item.isDone}">{{ item.name }}</div>
+                    
                     <div v-if="item.imageURL" class="mt-2">
-                        <img :src="item.imageURL" class="w-12 h-12 object-cover rounded border" alt="Item image">
+                        <a v-if="isInstagramLink(item.imageURL)" 
+                            :href="item.imageURL" 
+                            target="_blank" 
+                            class="text-xs font-semibold text-pink-600 bg-pink-100 px-2 py-1 rounded inline-flex items-center gap-1">
+                            <i class="ph ph-instagram-logo"></i> 查看貼文
+                        </a>
+                        <img v-else :src="item.imageURL" class="w-12 h-12 object-cover rounded border" alt="Item image">
                     </div>
                   </div>
                 </div>
@@ -339,7 +349,7 @@
       
                 </div>
               </li>
-              <li v-if="expenses.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無記錄</li>
+              <li v-if="expenses.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無記錄</li
             </ul>
           </div>
 
@@ -479,7 +489,7 @@
                 <div class="space-y-3 text-sm">
                     <input v-model="newShoppingItem.name" class="w-full p-2 rounded-lg border bg-white" placeholder="項目名稱 (例如：佳德鳳梨酥)">
                     
-                    <input v-model="newShoppingItem.imageURL" class="w-full p-2 rounded-lg border bg-white" placeholder="圖片 URL (例如: https://...jpg)">
+                    <input v-model="newShoppingItem.imageURL" class="w-full p-2 rounded-lg border bg-white" placeholder="圖片 URL 或 Instagram 貼文連結">
 
                     <div class="flex items-center gap-3 mt-3">
                         <input type="checkbox" id="shopping-done" v-model="newShoppingItem.isDone" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500">
@@ -532,6 +542,14 @@
 
     // Helper function to add IDs to initial data
     const initializeListWithIds = (list) => list.map(item => ({ ...item, id: generateId() }));
+    
+    // Helper function to check if URL is an Instagram Post link
+    function isInstagramLink(url) {
+        if (!url) return false;
+        // 檢查是否包含 instagram.com/p/ 或 instagram.com/reel/
+        return /^(https?:\/\/(www\.)?instagram\.com\/(p|reel)\/)/i.test(url);
+    }
+
 
     createApp({
       setup(){
@@ -940,7 +958,7 @@
 
         async function fetchWeather(){
           try {
-            const lat = 25.0330, lon = 121.5654;
+            const lat = 25.0330, lon = 121.5654; // Taipei
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=precipitation_probability&timezone=Asia%2FTaipei`;
             const res = await fetch(url);
             const data = await res.json();
@@ -973,7 +991,7 @@
         }
 
         // localStorage persistence
-        const STORAGE_KEY = 'emenu-taipei-data-v4'; 
+        const STORAGE_KEY = 'emenu-taipei-data-v5'; // Update version
         function saveAll(){
           const payload = {
             currentTab: currentTab.value,
@@ -1060,7 +1078,8 @@
 
           // Shopping (New)
           shoppingList, shoppingModalOpen, newShoppingItem, openShoppingModal, closeShoppingModal, saveShoppingItem, removeShoppingItem,
- 
+          isInstagramLink, // expose the new helper function
+
           // expenses
           expenses, newExpense, addExpense, removeExpense, toggleExpenseDone, totalExpense,
           
