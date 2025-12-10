@@ -47,7 +47,7 @@
         border: 1px solid rgba(255,255,255,0.35);
     }
 
-    .iphone-dock button i { font-size: 1.25rem; }
+    .iphone-dock button i { font-size: 1.2rem; }
 
     /* 卡片細節 */
     .glass-card { border-radius: var(--card-radius); background: rgba(255,255,255,0.88); border: 1px solid rgba(255,255,255,0.35);
@@ -85,31 +85,23 @@
 
       <div class="mb-4">
         <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-          <button @click="currentTab = '行前'" 
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
-                  :class="currentTab === '行前' ?
-                  'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
-             <i class="ph ph-list text-xl mb-1"></i>
-             <span>行前</span>
-          </button>
-          
-          <button @click="currentTab = '地圖'" 
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex items-center justify-center text-xs font-semibold transition-transform"
-                  :class="currentTab === '地圖' ?
-                  'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
-             <i class="ph ph-map-trifold text-xl mb-1"></i>
-             <span>地圖</span>
-          </button>
+            <button @click="currentTab = '行前'" 
+                    class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
+                    :class="currentTab === '行前' ?
+                    'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
+                <i class="ph ph-list text-xl mb-1"></i>
+                <span>行前</span>
+            </button>
 
-          <button v-for="(d, i) in days" :key="i"
-                  @click="selectDay(i); currentTab = '行程'"
-                  class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
-                  :class="selectedDay === i && currentTab === '行程' ?
-                  'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 text-gray-600 border border-white/40'">
-            <span class="text-[10px] font-semibold text-sky-600/90 mb-0.5">Day {{ i + 1 }}</span>
-            <span class="text-[12px] font-medium">{{ d.week }}</span>
-            <span class="text-base font-bold mt-0.5">{{ d.date }}/12</span>
-          </button>
+            <button v-for="(d, i) in days" :key="i"
+                    @click="selectDay(i); currentTab = '行程'"
+                    class="flex-shrink-0 w-14 h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
+                    :class="selectedDay === i && currentTab === '行程' ?
+                    'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 text-gray-600 border border-white/40'">
+                <span class="text-[10px] font-semibold text-sky-600/90 mb-0.5">Day {{ i + 1 }}</span>
+                <span class="text-[12px] font-medium">{{ d.week }}</span>
+                <span class="text-base font-bold mt-0.5">{{ d.date }}/12</span>
+            </button>
         </div>
       </div>
 
@@ -121,6 +113,7 @@
           </div>
     
           <div class="flex h-24">
+            
             <div class="flex-1 flex items-center justify-start">
                 <div class="text-[64px] font-bold text-gray-800 leading-none">{{ weather.temp }}°</div>
             </div>
@@ -139,44 +132,55 @@
         </div>
 
         <transition name="fade">
-          <div v-if="shouldShowFlightCard" 
+            <div v-if="shouldShowFlightCard" 
                  class="rounded-2xl p-4 text-white shadow-lg" 
                  style="background: linear-gradient(135deg,#60a5fa 0%,#2dd4bf 100%);">
               <div class="flex justify-between items-center mb-3">
                 <div class="text-xs font-bold bg-white/20 px-2 py-1 rounded">FLIGHT</div>
+            
                 <div class="text-xs text-right">
                     <div class="font-mono font-semibold text-lg">{{ activeFlight.depTime }}</div>
-                    <div class="text-xs opacity-80 mt-1">Arr. {{ activeFlight.arrTime }}</div>
+                    <div class="text-xs opacity-80 mt-1">Arr.
+                    {{ activeFlight.arrTime }}</div>
                 </div>
+
               </div>
 
               <div class="flex items-center justify-between">
                 <div class="flex flex-col items-center">
                   <div class="text-[11px] opacity-80">from</div>
-                  <div class="text-3xl font-bold tracking-widest">{{ activeFlight.fromCode }}</div>
+            
+                    <div class="text-3xl font-bold tracking-widest">{{ activeFlight.fromCode }}</div>
                   <div class="text-sm font-semibold opacity-80 text-white/90 mt-1">{{ activeFlight.fromTerminal }}</div>
                 </div>
 
                 <div class="flex-1 px-4 text-center">
                   <i class="ph ph-airplane-tilt text-2xl"></i>
-                  <div class="h-0.5 bg-white/30 my-3"></div>
+        
+                    <div class="h-0.5 bg-white/30 my-3"></div>
                   <div class="text-xs opacity-75">{{ activeFlight.note }}</div>
                 </div>
 
                 <div class="flex flex-col items-center">
                   <div class="text-[11px] opacity-80">to</div>
-                  <div class="text-3xl font-bold tracking-widest">{{ activeFlight.toCode }}</div>
+          
+                    <div class="text-3xl font-bold tracking-widest">{{ activeFlight.toCode }}</div>
                    <div class="text-sm font-semibold opacity-80 text-white/90 mt-1">{{ activeFlight.toTerminal }}</div>
                 </div>
               </div>
 
               <div class="mt-4 flex justify-between items-center">
-                <div class="text-sm">{{ activeFlight.code }} — {{ activeFlight.title }}</div>
-                <div class="bg-white text-sky-600 px-3 py-1 rounded-full text-xs font-bold">已確認</div>
+             
+                    <div class="text-sm">{{ activeFlight.code }} — {{ activeFlight.title }}</div>
+                <div class="flex gap-2">
+                    <button @click="openFlightModal(activeFlight.id)" class="text-white text-xs font-bold"><i class="ph ph-pencil"></i></button>
+                    <button @click="removeFlight(activeFlight.id)" class="text-white text-xs font-bold"><i class="ph ph-trash"></i></button>
+                    <div class="bg-white text-sky-600 px-3 py-1 rounded-full text-xs font-bold">已確認</div>
+                </div>
               </div>
             </div>
         </transition>
-
+        
         <transition name="fade">
             <div v-if="selectedMapLocation" 
                  class="glass-card !p-4 bg-white/95 border-2 border-sky-200 relative">
@@ -193,14 +197,14 @@
                     <p class="text-sm text-gray-500 pl-7">{{ selectedMapLocation.address }}</p>
                 </div>
 
-                <div class="flex gap-3">
+                <div class="flex justify-center gap-3">
                     <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank"
-                       class="flex-1 py-3 px-2 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold shadow-sm active:scale-95 transition text-sm">
+                       class="flex-1 max-w-[200px] py-3 px-2 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold shadow-sm active:scale-95 transition text-sm">
                         <i class="ph ph-map-trifold text-lg text-blue-500"></i>
                         Google 地圖
                     </a>
                     <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank"
-                       class="flex-1 py-3 px-2 flex items-center justify-center gap-2 bg-emerald-500 text-white rounded-xl font-bold shadow-md shadow-emerald-200 active:scale-95 transition text-sm">
+                       class="flex-1 max-w-[200px] py-3 px-2 flex items-center justify-center gap-2 bg-emerald-500 text-white rounded-xl font-bold shadow-md shadow-emerald-200 active:scale-95 transition text-sm">
                         <i class="ph ph-navigation-arrow text-lg"></i>
                         開始導航
                     </a>
@@ -244,31 +248,6 @@
             </div>
           </div>
 
-          <div v-if="currentTab === '地圖'">
-            <h3 class="text-base font-bold mb-2">📍 地圖與導航</h3>
-            <div class="p-4 rounded-xl bg-sky-100 border-sky-200 border-2 text-sky-800 mb-4">
-                <i class="ph ph-info text-lg mr-1"></i>
-                <span class="text-sm font-medium">提示：在「行程」頁面點擊地點即可開啟導航。</span>
-            </div>
-            <div v-if="activeMapItem" class="glass-card p-4">
-                <h4 class="text-lg font-bold mb-2 text-gray-800">{{ activeMapItem.title }}</h4>
-                <p class="text-sm text-gray-500 mb-4">{{ activeMapItem.address }}</p>
-                <div class="flex gap-3">
-                    <a :href="activeMapItem.gMapUrl" target="_blank" 
-                       class="flex-1 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-center font-bold shadow-sm">
-                        Google 地圖
-                    </a>
-                    <a :href="activeMapItem.gMapNavUrl" target="_blank" 
-                       class="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-center font-bold shadow-md">
-                        開始導航
-                    </a>
-                </div>
-            </div>
-            <div v-else class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">
-                今日行程中沒有可顯示地址的項目。
-            </div>
-          </div>
-
           <div v-if="currentTab === '行程'">
             <h3 class="text-base font-bold mb-2">今日行程 — {{ days[selectedDay].label }}</h3>
             <ul class="space-y-2">
@@ -297,43 +276,6 @@
               </li>
             </ul>
             <p v-if="sortedItinerary.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">今日暫無行程</p>
-          </div>
-
-          <div v-if="currentTab === '美食'">
-            <h3 class="text-base font-bold mb-2">美食清單</h3>
-            <ul class="space-y-2">
-                <li v-for="(f,i) in foodList" :key="i" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
-                <div class="font-medium">{{ f }}</div>
-                <button class="text-red-500 text-sm" @click="removeFood(i)">刪除</button>
-              </li>
-            </ul>
-            <div class="mt-3 flex gap-2">
-                <input v-model="newFood" @keyup.enter="addFood" class="flex-1 p-2 rounded-lg border bg-white/70" placeholder="新增美食">
-              <button @click="addFood" class="px-4 bg-sky-600 text-white rounded-lg">加入</button>
-            </div>
-          </div>
-
-          <div v-if="currentTab === '景點'">
-            <h3 class="text-base font-bold mb-2">景點收藏</h3>
-            <ul class="space-y-2">
-              <li v-for="(s,i) in spots" :key="i" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
-                <div class="font-medium">{{ s }}</div>
-                <button class="text-red-500 text-sm" @click="removeSpot(i)">刪除</button>
-              </li>
-            </ul>
-            <div class="mt-3 flex gap-2">
-              <input v-model="newSpot" @keyup.enter="addSpot" class="flex-1 p-2 rounded-lg border bg-white/70" placeholder="新增景點">
-              <button @click="addSpot" class="px-4 bg-sky-600 text-white rounded-lg">加入</button>
-            </div>
-          </div>
-
-          <div v-if="currentTab === '交通'">
-            <h3 class="text-base font-bold mb-2">交通筆記</h3>
-            <div class="text-sm text-gray-600">以計程車為主；出發前 10:30 前需休息。</div>
-            <div class="mt-3 space-y-2">
-              <div class="p-3 rounded-lg bg-white/80 border">預計交通：計程車 / 約 30–45 分鐘至機場</div>
-              <div class="p-3 rounded-lg bg-white/80 border">機場到達建議：提前 2 小時抵達</div>
-            </div>
           </div>
 
           <div v-if="currentTab === '購物'">
@@ -584,7 +526,7 @@
             { title:'返酒店休息', note:'10:30 前休息', time:'23:00', address:'' }
           ],
           [
-            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00', address:'108 台灣台北市萬華區中華路二段420號' },
+            { title:'午餐：千暉鵝肉店', note:'美食', time:'12:00', address:'台北市萬華區中華路二段420號' },
             { title:'Costco 中和店（續會＋買手信）', note:'購物', time:'14:00', address:'新北市中和區中山路二段347號' },
             { title:'晚餐：雞湯榮麵食館（17:00 後）', note:'晚餐', time:'17:30', address:'台北市萬華區西昌街202號' },
             { title:'華西街夜市', note:'逛夜市', time:'19:30', address:'台北市萬華區華西街' },
@@ -885,7 +827,7 @@
         }
         async function fetchWeather(){
           try {
-            const lat = 25.0330, lon = 121.5654; 
+            const lat = 25.0330, lon = 121.5654;
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=precipitation_probability&timezone=Asia%2FTaipei`;
             const res = await fetch(url);
             const data = await res.json();
