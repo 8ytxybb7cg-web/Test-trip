@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1.0,user-scalable=no" />
-  <title>eMenu Taipei v2.02 — 雲端行程助手</title>
+  <title>eMenu Taipei v2.01 — 雲端版</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
     :root{
@@ -30,440 +30,518 @@
     /* Animation */
     .fade-enter-active, .fade-leave-active { transition: opacity .25s ease; }
     .fade-enter-from, .fade-leave-to { opacity: 0; }
-    .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
-    .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }
+    
+    .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 12px); }
+    
+    .task-done { text-decoration: line-through; color: #9ca3af; }
 
-    /* Glass Effect for Sticky Header/Footer */
-    .glass {
-      background-color: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+    /* Dock Style */
+    .iphone-dock {
+        background: rgba(255,255,255,0.68);
+        backdrop-filter: blur(10px);
+        border-radius: 28px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+        padding: 0.75rem 1.875rem;
+        border: 1px solid rgba(255,255,255,0.35);
     }
-    .modal-backdrop {
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: rgba(0, 0, 0, 0.4); z-index: 40;
+    .iphone-dock button i { font-size: 1.875rem; }
+
+    /* Card Style */
+    .glass-card { 
+        border-radius: var(--card-radius);
+        background: rgba(255,255,255,0.88); 
+        border: 1px solid rgba(255,255,255,0.35);
+        padding: 0.75rem; 
+        box-shadow: 0 8px 24px rgba(2,6,23,0.06);
     }
-    .modal-content {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background-color: white; border-top-left-radius: 20px;
-        border-top-right-radius: 20px; z-index: 50;
-        max-height: 90vh; overflow-y: auto;
+
+    /* FIX: Prevent iOS Zoom on focus */
+    @media screen and (max-width: 768px) {
+        input, select, textarea {
+            font-size: 16px !important;
+        }
     }
-    /* Sync Status specific styles */
-    .sync-status-icon {
-        animation: pulse-sync 1.5s infinite;
+    
+    /* Sync Status Indicator */
+    .sync-status {
+      transition: all 0.3s ease;
     }
-    .sync-status-synced {
-        animation: none;
+    .sync-saving { color: #f59e0b; } /* Amber */
+    .sync-synced { color: #10b981; } /* Emerald */
+    .sync-error { color: #ef4444; } /* Red */
+    .sync-loading { color: #3b82f6; } /* Blue */
+
+    .rotate-icon {
+        animation: spin 1s linear infinite;
     }
-    .sync-status-error {
-        animation: shake 0.5s;
-    }
-    @keyframes pulse-sync {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20%, 60% { transform: translateX(-5px); }
-        40%, 80% { transform: translateX(5px); }
-    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="bg-gray-900">
-  <div id="app" class="flex flex-col h-full mx-auto max-w-md bg-gray-50 shadow-2xl relative">
 
-    <header class="glass sticky top-0 z-30 p-4 border-b border-gray-200">
-        <div class="flex justify-between items-center text-gray-800">
-            <div class="flex items-center space-x-3 text-sm">
-                <div class="flex items-center space-x-1" :title="'氣溫: ' + weather.temp + '°C, 降雨機率: ' + weather.rain + '%'">
-                    <i :class="weatherIconClass" class="ph-bold text-lg"></i>
-                    <span>{{ weather.desc }} ({{ weather.temp }}°)</span>
-                </div>
-                <div class="flex items-center space-x-1 text-xs text-gray-500" :title="'最後更新: ' + lastRateUpdateLabel">
-                    <i class="ph ph-currency-dollar text-lg"></i>
-                    <span>TWD 1:HKD {{ formattedRate }}</span>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-1 text-xs text-gray-500">
-                <div class="flex items-center" 
-                    :class="{'text-green-600': syncState === 'synced', 'text-amber-500': syncState === 'loading' || syncState === 'saving', 'text-red-500': syncState === 'error'}"
-                    @click="forceReloadCloud"
-                >
-                    <i class="ph-bold text-lg sync-status-icon"
-                        :class="{
-                            'ph-check-circle sync-status-synced': syncState === 'synced',
-                            'ph-arrows-clockwise': syncState === 'loading' || syncState === 'saving',
-                            'ph-warning-circle sync-status-error': syncState === 'error'
-                        }"></i>
-                    <span>{{ syncStatusText }}</span>
-                </div>
-                <span class="ml-2">| {{ appVersion }}</span>
-            </div>
-        </div>
-        
-        <div class="mt-4 flex space-x-2 text-sm">
-            <button v-for="tab in ['行前', '行程', '購物', '記帳', '資訊']" :key="tab"
-                    @click="currentTab = tab"
-                    :class="['px-3 py-1.5 rounded-full font-medium transition', currentTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']">
-                {{ tab }}
-            </button>
-        </div>
-    </header>
+<body>
+  <div id="app" class="relative min-h-screen flex flex-col">
 
-    <main class="flex-1 overflow-y-auto no-scrollbar p-4 pt-2">
-        <transition name="fade" mode="out-in">
-            <div v-if="currentTab === '行前'" :key="'preTrip'">
-                <h2 class="text-xl font-bold mb-3 text-gray-800">行前清單</h2>
-                <div class="space-y-2 mb-4">
-                    <div v-for="note in preTripNotes" :key="note.id" 
-                         :class="['flex items-center p-3 rounded-xl transition', note.isDone ? 'bg-white border border-green-500 text-gray-500 line-through' : 'bg-white shadow-sm border border-gray-200']">
-                        <input type="checkbox" v-model="note.isDone" class="form-checkbox h-5 w-5 text-green-600 rounded mr-3" @change="saveAll">
-                        <span class="flex-1 text-base truncate">{{ note.name }}</span>
-                        <button @click="removePreNote(note.id)" class="text-gray-400 hover:text-red-500 ml-2">
-                            <i class="ph ph-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="flex mt-4 p-2 bg-white rounded-xl shadow border border-gray-200">
-                    <input v-model="newPreNote" @keyup.enter="addPreNote" type="text" placeholder="新增待辦事項..." class="flex-1 px-2 py-1 focus:outline-none text-gray-700">
-                    <button @click="addPreNote" :disabled="!newPreNote.trim()" class="ml-2 text-indigo-600 hover:text-indigo-800 disabled:text-gray-400">
-                        <i class="ph ph-plus-circle text-2xl"></i>
-                    </button>
-                </div>
-
-                <div v-if="shouldShowFlightCard && activeFlight && currentTab === '行前'" 
-                    class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl shadow-md cursor-pointer"
-                    @click="openFlightModal(activeFlight.id)">
-                    <h3 class="font-bold text-indigo-700 mb-2 flex items-center">
-                        <i :class="activeFlight.type === 'outbound' ? 'ph ph-plane-takeoff' : 'ph ph-plane-landing'" class="text-xl mr-2"></i>
-                        今日航班提醒 ({{ activeFlight.type === 'outbound' ? '去程' : '回程' }})
-                    </h3>
-                    <div class="text-sm text-indigo-600 space-y-1">
-                        <p class="font-medium">{{ activeFlight.code }} {{ activeFlight.title }}</p>
-                        <p>{{ activeFlight.fromCode }} ({{ activeFlight.depTime }}) → {{ activeFlight.toCode }} ({{ activeFlight.arrTime }})</p>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else-if="currentTab === '行程'" :key="'itinerary'">
-                <div class="sticky top-0 -mx-4 pt-2 pb-3 px-4 glass z-20 flex space-x-2 no-scrollbar overflow-x-auto border-b border-gray-200">
-                    <button v-for="(day, index) in days" :key="index"
-                            @click="selectDay(index)"
-                            :class="['flex-shrink-0 w-16 h-16 rounded-xl transition duration-150 flex flex-col justify-center items-center', selectedDay === index ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200']">
-                        <span class="text-xs font-medium">{{ day.week }}</span>
-                        <span class="text-xl font-bold">{{ day.date }}</span>
-                        <span class="text-[10px]">{{ day.label.split(' ')[0] }}</span>
-                    </button>
-                </div>
-                
-                <div v-if="shouldShowFlightCard && activeFlight" 
-                    class="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl shadow-md cursor-pointer"
-                    @click="openFlightModal(activeFlight.id)">
-                    <h3 class="font-bold text-indigo-700 mb-2 flex items-center">
-                        <i :class="activeFlight.type === 'outbound' ? 'ph ph-plane-takeoff' : 'ph ph-plane-landing'" class="text-xl mr-2"></i>
-                        {{ days[selectedDay].label }} - {{ activeFlight.title }}
-                    </h3>
-                    <div class="text-sm text-indigo-600 space-y-1">
-                        <p>{{ activeFlight.code }} | {{ activeFlight.date }}</p>
-                        <p>{{ activeFlight.fromCode }}{{ activeFlight.fromTerminal ? ' (' + activeFlight.fromTerminal + ')' : '' }} ({{ activeFlight.depTime }}) → {{ activeFlight.toCode }}{{ activeFlight.toTerminal ? ' (' + activeFlight.toTerminal + ')' : '' }} ({{ activeFlight.arrTime }})</p>
-                        <p class="text-xs text-indigo-500 mt-1">點擊修改航班資料</p>
-                    </div>
-                </div>
-                
-                <h2 v-else class="text-xl font-bold mt-4 mb-3 text-gray-800">{{ days[selectedDay].label }} 行程</h2>
-
-                <div class="space-y-4 relative pb-4">
-                    <div v-for="(item, index) in sortedItinerary" :key="item.id" 
-                         class="flex transition group">
-                        <div class="flex flex-col items-center w-16 mr-3">
-                            <span class="text-sm font-bold text-gray-800">{{ item.time || '--:--' }}</span>
-                            <div :class="['w-3 h-3 rounded-full mt-1 flex-shrink-0 transition', selectedMapLocation && selectedMapLocation.id === item.id ? 'bg-red-500 ring-2 ring-red-300' : 'bg-indigo-500']"></div>
-                            <div v-if="index < sortedItinerary.length - 1" class="w-0.5 flex-1 bg-indigo-200 my-1"></div>
-                        </div>
-                        
-                        <div @click="openItineraryModal(item)"
-                             :class="['flex-1 p-3 rounded-xl bg-white shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition', selectedMapLocation && selectedMapLocation.id === item.id ? 'border-red-500 ring-1 ring-red-500' : '']">
-                            <p class="font-semibold text-gray-800">{{ item.title }}</p>
-                            <p v-if="item.note" class="text-xs text-gray-500 mt-0.5">{{ item.note }}</p>
-                            <p v-if="item.address" class="text-xs text-indigo-500 mt-1 flex items-start">
-                                <i class="ph ph-map-pin text-sm mr-1 mt-0.5 flex-shrink-0"></i>
-                                <span class="truncate">{{ item.address }}</span>
-                            </p>
-                        </div>
-                        
-                        <div class="flex flex-col justify-center space-y-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button v-if="item.address" @click.stop="showLocationOnMap(item)" 
-                                :title="'地圖: ' + item.title" 
-                                :class="['p-2 rounded-full text-white transition', selectedMapLocation && selectedMapLocation.id === item.id ? 'bg-red-500 hover:bg-red-600' : 'bg-indigo-500 hover:bg-indigo-600']">
-                                <i class="ph ph-map-trifold text-xl"></i>
-                            </button>
-                            <button @click.stop="removeItineraryItem(item.id)" title="刪除" class="p-2 rounded-full bg-gray-200 text-gray-600 hover:bg-red-100 hover:text-red-600 transition">
-                                <i class="ph ph-trash-simple text-xl"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 p-3 bg-white rounded-xl shadow border border-gray-200 flex space-x-2">
-                    <input v-model="quickItinerary.time" type="time" class="p-1 border border-gray-300 rounded text-sm text-gray-700 w-24">
-                    <input v-model="quickItinerary.title" @keyup.enter="addQuickItinerary" type="text" placeholder="快速新增行程標題..." class="flex-1 px-2 py-1 focus:outline-none text-gray-700">
-                    <button @click="addQuickItinerary" :disabled="!quickItinerary.title.trim()" class="ml-2 text-indigo-600 hover:text-indigo-800 disabled:text-gray-400">
-                        <i class="ph ph-plus-circle text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div v-else-if="currentTab === '購物'" :key="'shopping'">
-                <h2 class="text-xl font-bold mb-3 text-gray-800">購物清單</h2>
-                 <div class="flex justify-between items-center mb-4">
-                    <p class="text-sm text-gray-500">{{ shoppingList.length }} 項商品待購</p>
-                    <button @click="openShoppingModal(null)" class="text-indigo-600 font-medium text-sm flex items-center">
-                        <i class="ph ph-plus-circle text-lg mr-1"></i> 新增商品
-                    </button>
-                </div>
-                
-                <div class="space-y-3">
-                    <div v-for="item in shoppingList" :key="item.id" 
-                         :class="['flex items-center p-3 rounded-xl transition cursor-pointer group', item.isDone ? 'bg-white border border-green-500 text-gray-500 line-through' : 'bg-white shadow-sm border border-gray-200']">
-                        <input type="checkbox" v-model="item.isDone" class="form-checkbox h-5 w-5 text-green-600 rounded mr-3" @change="saveAll">
-                        <div class="flex-1 min-w-0" @click="openShoppingModal(item)">
-                            <span class="text-base font-medium truncate">{{ item.name }}</span>
-                             <div v-if="item.imageURL" class="text-xs text-indigo-500 mt-0.5 flex items-center truncate">
-                                <i class="ph ph-link text-sm mr-1"></i>
-                                <span>{{ isInstagramLink(item.imageURL) ? 'Instagram' : '圖片連結' }}</span>
-                            </div>
-                        </div>
-                       
-                        <button @click.stop="removeShoppingItem(item.id)" class="text-gray-400 hover:text-red-500 ml-3">
-                            <i class="ph ph-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else-if="currentTab === '記帳'" :key="'expenses'">
-                <h2 class="text-xl font-bold mb-3 text-gray-800">記帳與消費</h2>
-
-                <div class="bg-indigo-600 text-white p-4 rounded-xl shadow-lg mb-4">
-                    <p class="text-sm font-medium">總消費 (約合港幣)</p>
-                    <div class="flex items-end justify-between mt-1">
-                        <span class="text-4xl font-extrabold">HK$ {{ totalExpense }}</span>
-                        <p class="text-xs opacity-80">匯率: TWD 1:HKD {{ formattedRate || 'N/A' }}</p>
-                    </div>
-                </div>
-
-                <div class="p-3 bg-white rounded-xl shadow border border-gray-200 mb-4">
-                    <h3 class="font-bold text-gray-700 mb-2">新增支出</h3>
-                    <div class="space-y-2">
-                         <input v-model="newExpense.name" type="text" placeholder="消費項目描述..." class="w-full px-3 py-2 border rounded text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                        <div class="flex space-x-2">
-                             <select v-model="newExpense.currency" class="px-3 py-2 border rounded text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="TWD">TWD</option>
-                                <option value="HKD">HKD</option>
-                            </select>
-                            <input v-model.number="newExpense.amount" type="number" placeholder="金額..." class="flex-1 px-3 py-2 border rounded text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                           
-                            <select v-model="newExpense.category" class="px-3 py-2 border rounded text-sm text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                                <option>食物</option>
-                                <option>交通</option>
-                                <option>住宿</option>
-                                <option>購物</option>
-                                <option>雜項</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button @click="addExpense" :disabled="!newExpense.name || !newExpense.amount" class="w-full mt-3 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition disabled:bg-indigo-300">
-                        記錄支出
-                    </button>
-                </div>
-
-                <div class="space-y-2">
-                    <div v-for="expense in expenses" :key="expense.id" 
-                         :class="['flex items-center p-3 rounded-xl transition group', expense.isDone ? 'bg-white border border-green-500 text-gray-500 line-through' : 'bg-white shadow-sm border border-gray-200']">
-                        <input type="checkbox" v-model="expense.isDone" class="form-checkbox h-5 w-5 text-green-600 rounded mr-3" @change="toggleExpenseDone(expense.id)">
-                        <div class="flex-1 min-w-0">
-                             <p class="text-base font-medium truncate">{{ expense.name }}</p>
-                             <p class="text-xs text-gray-500 mt-0.5">{{ expense.date }} · {{ expense.category }}</p>
-                        </div>
-                        <span class="font-bold text-lg mr-2 flex-shrink-0">{{ expense.currency }}{{ expense.amount }}</span>
-                        <button @click="removeExpense(expense.id)" class="text-gray-400 hover:text-red-500 ml-2">
-                            <i class="ph ph-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div v-else-if="currentTab === '資訊'" :key="'info'">
-                <h2 class="text-xl font-bold mb-3 text-gray-800">重要資訊與筆記</h2>
-                 <div class="flex justify-between items-center mb-4">
-                    <p class="text-sm text-gray-500">{{ infoList.length }} 項資訊</p>
-                    <button @click="openInfoModal(null)" class="text-indigo-600 font-medium text-sm flex items-center">
-                        <i class="ph ph-plus-circle text-lg mr-1"></i> 新增資訊
-                    </button>
-                </div>
-                
-                <div class="space-y-3">
-                    <div v-for="item in infoList" :key="item.id" 
-                         :class="['flex items-center p-3 rounded-xl transition cursor-pointer group', item.isDone ? 'bg-white border border-green-500 text-gray-500 line-through' : 'bg-white shadow-sm border border-gray-200']"
-                         @click="openInfoModal(item)">
-                        <i class="ph ph-info text-2xl mr-3 text-indigo-500"></i>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-base font-medium truncate">{{ item.title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5 truncate">{{ item.note }}</p>
-                        </div>
-                        <button @click.stop="removeInfo(item.id)" class="text-gray-400 hover:text-red-500 ml-3">
-                            <i class="ph ph-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        
-        <transition name="slide-up">
-            <div v-if="selectedMapLocation" 
-                 class="fixed bottom-20 right-4 w-64 bg-white p-3 rounded-xl shadow-2xl border border-gray-200 z-40">
-                <p class="text-xs font-semibold text-gray-700 truncate">{{ selectedMapLocation.title }}</p>
-                <p class="text-xs text-gray-500 mt-1 truncate">{{ selectedMapLocation.address }}</p>
-                <div class="mt-2 flex space-x-2">
-                    <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank" class="flex-1 flex justify-center items-center py-1 bg-indigo-500 text-white text-xs rounded-lg hover:bg-indigo-600">
-                        <i class="ph ph-magnifying-glass mr-1"></i> 搜尋
-                    </a>
-                    <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank" class="flex-1 flex justify-center items-center py-1 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600">
-                        <i class="ph ph-compass-tool mr-1"></i> 導航
-                    </a>
-                </div>
-            </div>
-        </transition>
-    </main>
-    
-    <div class="fixed bottom-20 right-4 z-40" :class="{'hidden': selectedMapLocation}">
-        <button @click="openAddModal" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition flex items-center justify-center">
-            <i class="ph ph-plus-circle text-3xl"></i>
-        </button>
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <img src="./IMG_6732.jpeg?auto=format&fit=crop&w=2000&q=80"
+           class="w-full h-full object-cover opacity-100" alt="Taipei Background">
+      <div class="absolute inset-0 bg-gradient-to-b from-slate-100/75 via-slate-100/55 to-slate-200/85"></div>
     </div>
 
-    <transition name="fade">
-        <div v-if="itineraryModalOpen" class="modal-backdrop" @click="closeItineraryModal"></div>
-    </transition>
-    <transition name="slide-up">
-        <div v-if="itineraryModalOpen" class="modal-content p-4 z-50">
-            <h3 class="text-xl font-bold mb-4 text-gray-800">{{ newItineraryItem.id ? '編輯行程項目' : '新增行程項目' }}</h3>
-            <div class="space-y-4">
-                <input v-model="newItineraryItem.title" type="text" placeholder="標題 (必填)..." class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                <div class="flex space-x-4">
-                    <input v-model="newItineraryItem.time" type="time" placeholder="時間" class="w-1/3 px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <select v-model.number="newItineraryItem.dayIndex" class="w-2/3 px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option v-for="(day, index) in days" :value="index" :key="index">{{ day.label }}</option>
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar pb-safe pt-6 px-4">
+
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">eMenu Taipei <span class="ml-1 text-sm">🇹🇼</span></h1>
+          <div class="flex items-center gap-2 mt-1">
+            <p class="text-xs text-gray-500">台北 12/15 — 12/18 <span class="opacity-50 ml-1 text-[10px]">{{ appVersion }}</span></p>
+            
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 bg-white/60 px-2 py-0.5 rounded-full border border-gray-200">
+                    <div class="w-2 h-2 rounded-full" 
+                        :class="{
+                            'bg-emerald-500': syncState === 'synced', 
+                            'bg-yellow-500 animate-pulse': syncState === 'saving', 
+                            'bg-blue-500 animate-pulse': syncState === 'loading',
+                            'bg-red-500': syncState === 'error'
+                        }"></div>
+                    <span class="text-[10px] font-medium sync-status" 
+                        :class="{
+                            'sync-synced': syncState === 'synced', 
+                            'sync-saving': syncState === 'saving', 
+                            'sync-loading': syncState === 'loading',
+                            'sync-error': syncState === 'error'
+                        }">
+                        {{ syncStatusText }}
+                    </span>
+                </div>
+                <button @click="forceReloadCloud" class="bg-white/60 p-1 rounded-full border border-gray-200 text-gray-500 active:bg-gray-200" title="立即同步">
+                    <i class="ph ph-arrows-clockwise text-xs" :class="{'rotate-icon': syncState === 'loading'}"></i>
+                </button>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md border border-emerald-200 inline-block">即時匯率</div>
+          <div class="text-xs font-bold text-gray-600 mt-1">
+            1 TWD ≈ <span class="text-emerald-600 text-sm">{{ formattedRate }}</span> HKD
+            <div class="text-[10px] text-gray-400">更新：{{ lastRateUpdateLabel }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <div class="flex justify-between gap-2 overflow-x-auto no-scrollbar pb-2">
+          <button @click="currentTab = '行前'" 
+                  class="flex-shrink-0 w-[20%] min-w-[72px] h-20 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-transform"
+                  :class="currentTab === '行前' ? 'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 border border-white/40 text-gray-600'">
+             <i class="ph ph-list text-xl mb-1"></i>
+             <span>行前</span>
+          </button>
+          
+          <button v-for="(d, i) in days" :key="i"
+                  @click="selectDay(i); currentTab = '行程'"
+                  class="flex-shrink-0 w-[22%] min-w-[72px] h-20 rounded-xl flex flex-col items-center justify-center transition-transform"
+                  :class="selectedDay === i && currentTab === '行程' ? 'bg-gradient-to-br from-sky-200 to-teal-100 scale-105 shadow-md text-gray-900 border border-sky-200' : 'bg-white/80 text-gray-600 border border-white/40'">
+            <span class="text-[10px] font-semibold text-sky-600/90 mb-0.5">Day {{ i + 1 }}</span>
+            <span class="text-[12px] font-medium">{{ d.week }}</span>
+            <span class="text-base font-bold mt-0.5">{{ d.date }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-4 mb-4">
+        <div class="glass-card">
+          <div class="flex items-center mb-2">
+             <i class="ph ph-map-pin-simple-area text-sm text-gray-500 mr-1"></i>
+             <span class="text-xs font-bold text-gray-600">台北市</span>
+          </div>
+          <div class="flex h-24">
+            <div class="flex-1 flex items-center justify-start">
+              <div class="text-[64px] font-bold text-gray-800 leading-none">{{ weather.temp }}°</div>
+            </div>
+            <div class="flex-shrink-0 w-24 flex items-center justify-center">
+                <i :class="weatherIconClass" class="text-[64px] text-sky-500 leading-none"></i>
+            </div>
+            <div class="flex-shrink-0 w-32 flex flex-col justify-center items-end text-right">
+                <div class="text-base text-gray-600 font-bold mb-1">{{ weather.desc }}</div>
+                <div class="text-xs text-gray-500">降雨機率 {{ weather.rain }}%</div>
+            </div>
+          </div>
+        </div>
+
+        <transition name="fade">
+          <div v-if="shouldShowFlightCard" 
+               class="rounded-2xl p-4 text-white shadow-lg relative overflow-hidden" 
+               style="background: linear-gradient(135deg,#60a5fa 0%,#2dd4bf 100%);">
+              <div class="flex justify-between items-center mb-3 relative z-10">
+                <div class="text-xs font-bold bg-white/20 px-2 py-1 rounded">FLIGHT</div>
+                <div class="text-xs text-right">
+                    <div class="font-mono font-semibold text-lg">{{ activeFlight.depTime }}</div>
+                    <div class="text-xs opacity-80 mt-1">Arr. {{ activeFlight.arrTime }}</div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between relative z-10">
+                <div class="flex flex-col items-center">
+                  <div class="text-[11px] opacity-80">from</div>
+                  <div class="text-3xl font-bold tracking-widest">{{ activeFlight.fromCode }}</div>
+                  <div class="text-sm font-semibold opacity-80 text-white/90 mt-1">{{ activeFlight.fromTerminal }}</div>
+                </div>
+                <div class="flex-1 px-4 text-center">
+                  <i class="ph ph-airplane-tilt text-2xl"></i>
+                  <div class="h-0.5 bg-white/30 my-3"></div>
+                  <div class="text-xs opacity-75">{{ activeFlight.note }}</div>
+                </div>
+                <div class="flex flex-col items-center">
+                  <div class="text-[11px] opacity-80">to</div>
+                  <div class="text-3xl font-bold tracking-widest">{{ activeFlight.toCode }}</div>
+                   <div class="text-sm font-semibold opacity-80 text-white/90 mt-1">{{ activeFlight.toTerminal }}</div>
+                </div>
+              </div>
+              <div class="mt-4 flex justify-between items-center relative z-10">
+                <div class="text-sm">{{ activeFlight.code }} — {{ activeFlight.title }}</div>
+                <div class="bg-white text-sky-600 px-3 py-1 rounded-full text-xs font-bold">已確認</div>
+              </div>
+            </div>
+        </transition>
+
+        <transition name="fade">
+            <div v-if="selectedMapLocation" class="glass-card !p-4 bg-white/95 border-2 border-sky-200 relative">
+                <button @click="selectedMapLocation = null" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+                <div class="mb-4 pr-6">
+                    <div class="flex items-center gap-2 mb-1">
+                         <i class="ph ph-map-pin-fill text-red-500 text-xl"></i>
+                         <h4 class="text-lg font-bold text-gray-800">{{ selectedMapLocation.title }}</h4>
+                    </div>
+                    <p class="text-sm text-gray-500 pl-7">{{ selectedMapLocation.address }}</p>
+                </div>
+                <div class="flex justify-center gap-3">
+                    <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank"
+                       class="flex-1 max-w-[200px] py-3 px-2 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold shadow-sm active:scale-95 transition text-sm">
+                        <i class="ph ph-map-trifold text-lg text-blue-500"></i>
+                        Google 地圖
+                    </a>
+                    <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank"
+                       class="flex-1 max-w-[200px] py-3 px-2 flex items-center justify-center gap-2 bg-emerald-500 text-white rounded-xl font-bold shadow-md shadow-emerald-200 active:scale-95 transition text-sm">
+                        <i class="ph ph-navigation-arrow text-lg"></i>
+                        開始導航
+                    </a>
+                </div>
+            </div>
+        </transition>
+      </div>
+
+      <div v-if="currentTab !== '購物' && currentTab !== '行前'" class="flex justify-end mb-3">
+        <button @click="openAddModal" class="bg-sky-600 text-white px-4 py-2 rounded-lg shadow active:scale-95 transition flex items-center gap-1">
+            <i class="ph ph-plus-circle text-lg"></i>
+            <span v-if="isFlightDay && currentTab === '行程'">新增航班</span>
+            <span v-else>新增</span>
+        </button>
+      </div>
+
+      <div class="rounded-2xl p-3 bg-white/85 border border-white/30 backdrop-blur shadow">
+        <div>
+
+          <div v-if="currentTab === '行前'">
+            <h3 class="text-base font-bold mb-2">✅ 行前準備清單</h3>
+            <ul class="space-y-2">
+              <li v-for="(note, i) in preTripNotes" :key="note.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <i class="ph text-xl cursor-pointer" 
+                     :class="note.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
+                     @click="note.isDone = !note.isDone">
+                  </i>
+                  <span class="font-medium" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
+                </div>
+                <button class="text-red-500 text-base" @click="removePreNote(note.id)"><i class="ph ph-trash"></i></button>
+              </li>
+              <li v-if="preTripNotes.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">
+                請新增行前準備事項！
+              </li>
+            </ul>
+            <div class="mt-3">
+              <label class="text-xs text-gray-600">新增準備事項</label>
+              <div class="flex gap-2 mt-1">
+                <input v-model="newPreNote" @keyup.enter="addPreNote" class="flex-1 p-2 rounded-lg border bg-white/70 text-base" placeholder="例如：兌換台幣">
+                <button @click="addPreNote" class="px-4 bg-sky-600 text-white rounded-lg">加入</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="currentTab === '行程'">
+            <h3 class="text-base font-bold mb-2">今日行程 — {{ days[selectedDay].label }}</h3>
+            <ul class="space-y-2">
+              <li v-for="(it, idx) in sortedItinerary" :key="it.id" 
+                  @click="showLocationOnMap(it)"
+                  :class="{'cursor-pointer hover:bg-sky-50 transition border-l-4 border-l-sky-400 pl-3': (it.address || '').trim() !== '', 'border-l-transparent': (it.address || '').trim() === ''}"
+                  class="p-3 rounded-lg bg-white/80 border border-white/30 flex justify-between items-center relative overflow-hidden">
+                
+                <div class="flex-1">
+                  <div class="font-medium text-gray-800">{{ it.title }}</div>
+                  <div class="text-xs text-gray-500">{{ it.note }}</div>
+                  <div v-if="(it.address || '').trim() !== ''" class="text-[10px] text-sky-500 mt-1 flex items-center">
+                      <i class="ph ph-map-pin-line mr-1"></i> 點擊導航
+                  </div>
+                </div>
+     
+                <div class="flex items-center gap-2">
+                    <div class="text-sm font-bold text-gray-700 mr-2">{{ it.time || '--:--' }}</div>
+                    <button @click.stop="openItineraryModal(it)" class="text-gray-400 text-lg hover:text-sky-600 transition p-1">
+                      <i class="ph ph-pencil-simple"></i>
+                    </button>
+                    <button @click.stop="removeItineraryItem(it.id)" class="text-gray-400 text-lg hover:text-red-500 transition p-1">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+              </li>
+            </ul>
+            <p v-if="sortedItinerary.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">今日暫無行程</p>
+
+            <div v-if="isFlightDay" class="mt-4 pt-3 border-t border-gray-200/50">
+               <label class="text-xs text-gray-600 font-bold mb-1 block">➕ 快速新增行程</label>
+               <div class="flex gap-2">
+                   <input v-model="quickItinerary.time" type="time" class="w-20 p-2 rounded-lg border bg-white/70 text-base text-center">
+                   <input v-model="quickItinerary.title" @keyup.enter="addQuickItinerary" class="flex-1 p-2 rounded-lg border bg-white/70 text-base" placeholder="行程名稱...">
+                   <button @click="addQuickItinerary" class="px-3 bg-sky-600 text-white rounded-lg whitespace-nowrap">加入</button>
+               </div>
+            </div>
+          </div>
+
+          <div v-if="currentTab === '購物'">
+            <h3 class="text-base font-bold mb-2">🛒 購物清單</h3>
+            <div class="flex justify-end mb-3">
+                <button @click="openShoppingModal(null)" class="bg-sky-600 text-white px-3 py-1 rounded-lg text-sm font-medium">+ 新增項目</button>
+            </div>
+            <ul class="space-y-2">
+              <li v-for="(item, i) in shoppingList" :key="item.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+               <div class="flex items-start gap-3 flex-1">
+                  <i class="ph text-xl cursor-pointer mt-1 flex-shrink-0" 
+                     :class="item.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
+                     @click="item.isDone = !item.isDone">
+                  </i>
+                  <div class="flex-1">
+                    <div class="font-medium" :class="{'task-done': item.isDone, 'text-gray-900': !item.isDone}">{{ item.name }}</div>
+                    <div v-if="item.imageURL" class="mt-2">
+                        <a v-if="isInstagramLink(item.imageURL)" :href="item.imageURL" target="_blank" 
+                           class="text-xs font-semibold text-pink-600 bg-pink-100 px-2 py-1 rounded inline-flex items-center gap-1">
+                            <i class="ph ph-instagram-logo"></i> 查看貼文
+                        </a>
+                        <img v-else :src="item.imageURL" class="w-12 h-12 object-cover rounded border" alt="Item image">
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button @click="openShoppingModal(item)" class="text-gray-500 text-base hover:text-sky-600 transition"><i class="ph ph-pencil-simple"></i></button>
+                    <button class="text-red-500 text-base" @click="removeShoppingItem(item.id)"><i class="ph ph-trash"></i></button>
+                </div>
+              </li>
+              <li v-if="shoppingList.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">您的購物清單是空的！</li>
+            </ul>
+          </div>
+
+          <div v-if="currentTab === '記帳'">
+            <h3 class="text-base font-bold mb-2">💳 記帳</h3>
+            <div class="space-y-2 mb-3">
+                <div class="flex">
+                    <input v-model="newExpense.name" class="flex-1 p-2 rounded-lg border bg-white/70 text-base" placeholder="消費名稱 (例如：雅香火鍋)">
+                </div>
+                <div class="flex gap-2">
+                    <select v-model="newExpense.currency" class="w-24 p-2 rounded-lg border bg-white/70 text-base">
+                        <option value="TWD">TWD</option>
+                        <option value="HKD">HKD</option>
+                        <option value="JPY">JPY</option>
+                        <option value="USD">USD</option>
+                    </select>
+                    <input v-model.number="newExpense.amount" type="number" class="w-28 p-2 rounded-lg border bg-white/70 text-base" placeholder="金額">
+                    <select v-model="newExpense.category" class="flex-1 p-2 rounded-lg border bg-white/70 text-base">
+                        <option value="食物">食物</option>
+                        <option value="交通">交通</option>
+                        <option value="購物">購物</option>
+                        <option value="其他">其他</option>
                     </select>
                 </div>
-                <textarea v-model="newItineraryItem.note" placeholder="備註或簡單說明..." rows="2" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                <input v-model="newItineraryItem.address" type="text" placeholder="地址 (用於地圖導航)..." class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+                <button @click="addExpense" class="w-full py-2 bg-sky-600 text-white rounded-lg">加入消費記錄</button>
             </div>
-            <div class="mt-6 flex space-x-3">
-                <button @click="closeItineraryModal" class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition">取消</button>
-                <button @click="saveItineraryItem" :disabled="!newItineraryItem.title.trim()" class="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-indigo-300">儲存</button>
+            <div class="mb-3 p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+              <div class="text-sm text-gray-600">目前總支出 (HKD)</div>
+              <div class="font-bold text-lg">HKD {{ totalExpense }}</div>
             </div>
-        </div>
-    </transition>
+            <ul class="space-y-3">
+              <li v-for="(e, i) in expenses" :key="e.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+                <div class="flex items-start gap-3">
+                  <i class="ph text-xl cursor-pointer" 
+                     :class="e.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
+                     @click="toggleExpenseDone(e.id)"></i>
+                  <div>
+                    <div class="font-medium" :class="{'task-done': e.isDone}">{{ e.name }}</div>
+                    <div class="text-xs text-gray-500">{{ e.category }} · {{ e.date }}</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="font-bold">{{ e.currency }} {{ e.amount }}</div>
+                  <button @click="removeExpense(e.id)" class="text-red-500"><i class="ph ph-trash"></i></button>
+                </div>
+              </li>
+              <li v-if="expenses.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無記錄</li>
+            </ul>
+          </div>
 
-    <transition name="fade">
-        <div v-if="flightModalOpen" class="modal-backdrop" @click="closeFlightModal"></div>
-    </transition>
-    <transition name="slide-up">
-        <div v-if="flightModalOpen" class="modal-content p-4 z-50">
-            <h3 class="text-xl font-bold mb-4 text-gray-800">{{ newFlight.id ? '編輯航班資料' : '新增航班資料' }}</h3>
-            <div class="space-y-4">
-                <select v-model="newFlight.type" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="outbound">去程航班</option>
-                    <option value="return">回程航班</option>
-                </select>
-                <div class="flex space-x-2">
-                    <input v-model="newFlight.date" type="date" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <input v-model="newFlight.code" type="text" placeholder="航班編號 (e.g. CX400)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input v-model="newFlight.fromCode" type="text" placeholder="出發地代碼 (e.g. HKG)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <input v-model="newFlight.toCode" type="text" placeholder="目的地代碼 (e.g. TPE)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input v-model="newFlight.depTime" type="time" placeholder="出發時間" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <input v-model="newFlight.arrTime" type="time" placeholder="抵達時間" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <input v-model="newFlight.fromTerminal" type="text" placeholder="出發航廈 (可選)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    <input v-model="newFlight.toTerminal" type="text" placeholder="抵達航廈 (可選)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-                <input v-model="newFlight.title" type="text" placeholder="航班標題 (可選)" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+          <div v-if="currentTab === '資訊'">
+            <h3 class="text-base font-bold mb-2">ℹ️ 實用資訊</h3>
+            <div class="flex justify-end mb-3">
+                <button @click="openInfoModal(null)" class="bg-sky-600 text-white px-3 py-1 rounded-lg text-sm font-medium">+ 新增資訊</button>
             </div>
-            <div class="mt-6 flex space-x-3">
-                <button @click="closeFlightModal" class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition">取消</button>
-                <button @click="saveFlight" :disabled="!newFlight.code || !newFlight.date" class="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-indigo-300">儲存航班</button>
-            </div>
-        </div>
-    </transition>
+            <ul class="space-y-2">
+              <li v-for="(it, idx) in infoList" :key="it.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+                <div class="flex items-start gap-2 flex-1">
+                  <i class="ph text-xl cursor-pointer mt-1 flex-shrink-0" 
+                     :class="it.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
+                     @click="it.isDone = !it.isDone"></i>
+                  <div class="flex-1">
+                    <div class="font-medium" :class="{'task-done': it.isDone}">{{ it.title }}</div>
+                    <div class="text-xs text-gray-500 break-words">{{ it.note }}</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button @click="openInfoModal(it)" class="text-gray-500 text-base hover:text-sky-600 transition"><i class="ph ph-pencil-simple"></i></button>
+                    <button class="text-red-500 text-sm" @click="removeInfo(it.id)"><i class="ph ph-trash"></i></button>
+                </div>
+              </li>
+              <li v-if="infoList.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無資訊，請新增</li>
+            </ul>
+          </div>
 
-    <transition name="fade">
-        <div v-if="shoppingModalOpen" class="modal-backdrop" @click="closeShoppingModal"></div>
-    </transition>
-    <transition name="slide-up">
-        <div v-if="shoppingModalOpen" class="modal-content p-4 z-50">
-            <h3 class="text-xl font-bold mb-4 text-gray-800">{{ newShoppingItem.id ? '編輯購物項目' : '新增購物項目' }}</h3>
-            <div class="space-y-4">
-                <input v-model="newShoppingItem.name" type="text" placeholder="商品名稱 (必填)..." class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                <input v-model="newShoppingItem.imageURL" type="text" placeholder="商品圖片/連結 (可選)..." class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                <div class="flex items-center space-x-3">
-                    <input type="checkbox" v-model="newShoppingItem.isDone" id="shopping-done" class="form-checkbox h-5 w-5 text-green-600 rounded">
-                    <label for="shopping-done" class="text-gray-700">已購買</label>
-                </div>
-            </div>
-            <div class="mt-6 flex space-x-3">
-                <button @click="closeShoppingModal" class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition">取消</button>
-                <button @click="saveShoppingItem" :disabled="!newShoppingItem.name.trim()" class="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-indigo-300">儲存</button>
-            </div>
         </div>
-    </transition>
+      </div>
+
+      <div class="h-24 flex items-end justify-center pb-4">
+        <div class="text-[10px] text-gray-400">Ver: {{ appVersion }}</div>
+      </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-20 pb-safe px-4">
+      <div class="iphone-dock flex justify-around items-center w-[90%] max-w-sm mx-auto p-2">
+        <button @click="currentTab='行程'" class="flex flex-col items-center justify-center py-1" :class="currentTab==='行程' ? 'text-sky-600' : 'text-gray-500'"><i class="ph ph-map-pin"></i><span class="text-[10px] font-medium mt-0.5">行程</span></button>
+        <button @click="currentTab='記帳'" class="flex flex-col items-center justify-center py-1" :class="currentTab==='記帳' ? 'text-sky-600' : 'text-gray-500'"><i class="ph ph-wallet"></i><span class="text-[10px] font-medium mt-0.5">記帳</span></button>
+        <button @click="currentTab='購物'" class="flex flex-col items-center justify-center py-1" :class="currentTab==='購物' ? 'text-sky-600' : 'text-gray-500'"><i class="ph ph-shopping-bag"></i><span class="text-[10px] font-medium mt-0.5">購物</span></button>
+        <button @click="currentTab='資訊'" class="flex flex-col items-center justify-center py-1" :class="currentTab==='資訊' ? 'text-sky-600' : 'text-gray-500'"><i class="ph ph-info"></i><span class="text-[10px] font-medium mt-0.5">資訊</span></button>
+      </div>
+    </nav>
     
     <transition name="fade">
-        <div v-if="infoModalOpen" class="modal-backdrop" @click="closeInfoModal"></div>
-    </transition>
-    <transition name="slide-up">
-        <div v-if="infoModalOpen" class="modal-content p-4 z-50">
-            <h3 class="text-xl font-bold mb-4 text-gray-800">{{ newInfoItem.id ? '編輯資訊項目' : '新增資訊項目' }}</h3>
-            <div class="space-y-4">
-                <input v-model="newInfoItem.title" type="text" placeholder="標題 (e.g. 酒店電話)..." class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                <textarea v-model="newInfoItem.note" placeholder="詳細內容..." rows="3" class="w-full px-4 py-3 border rounded-xl text-gray-700 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-            </div>
-            <div class="mt-6 flex space-x-3">
-                <button @click="closeInfoModal" class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition">取消</button>
-                <button @click="saveInfoItem" :disabled="!newInfoItem.title.trim()" class="flex-1 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-indigo-300">儲存</button>
+        <div v-if="flightModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="closeFlightModal">
+            <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4">{{ newFlight.id ? '編輯航班' : '新增航班' }}</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex gap-3">
+                        <select v-model="newFlight.type" class="flex-1 p-2 rounded-lg border bg-white text-base">
+                            <option value="outbound">去程 (HKG -> TPE)</option>
+                            <option value="return">回程 (TPE -> HKG)</option>
+                        </select>
+                        <input v-model="newFlight.date" type="date" class="flex-1 p-2 rounded-lg border bg-white text-base">
+                    </div>
+                    <input v-model="newFlight.code" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="航班代碼 (例: CX400)">
+                    <input v-model="newFlight.title" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="航班名稱/備註">
+                    <div class="flex gap-3">
+                        <input v-model="newFlight.fromCode" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="出發 (HKG)">
+                        <input v-model="newFlight.toCode" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="抵達 (TPE)">
+                    </div>
+                    <div class="flex gap-3">
+                        <input v-model="newFlight.fromTerminal" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="出發航廈">
+                        <input v-model="newFlight.toTerminal" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="抵達航廈">
+                    </div>
+                    <div class="flex gap-3">
+                        <input v-model="newFlight.depTime" type="time" class="flex-1 p-2 rounded-lg border bg-white text-base">
+                        <input v-model="newFlight.arrTime" type="time" class="flex-1 p-2 rounded-lg border bg-white text-base">
+                    </div>
+                    <textarea v-model="newFlight.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="2" placeholder="備註..."></textarea>
+                </div>
+                <div class="mt-5 flex justify-end gap-3">
+                    <button @click="closeFlightModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
+                    <button @click="saveFlight" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
+                </div>
             </div>
         </div>
     </transition>
 
-    <footer class="glass sticky bottom-0 z-30 p-4 border-t border-gray-200">
-        <div class="flex justify-between items-center text-gray-500 text-xs">
-            <span>eMenu Taipei 雲端行程助手</span>
-            <span>Made with Vue & Supabase</span>
+    <transition name="fade">
+        <div v-if="itineraryModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="closeItineraryModal">
+            <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4">{{ newItineraryItem.id ? '編輯行程' : '新增行程' }}</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex gap-3">
+                        <input v-model="newItineraryItem.title" class="flex-1 p-2 rounded-lg border bg-white text-base" placeholder="標題">
+                        <input v-model="newItineraryItem.time" type="time" class="w-24 p-2 rounded-lg border bg-white text-base">
+                    </div>
+                    <input v-model="newItineraryItem.address" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="Google Map 地址 (選填)">
+                    <textarea v-model="newItineraryItem.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="3" placeholder="備註..."></textarea>
+                </div>
+                <div class="mt-5 flex justify-end gap-3">
+                    <button @click="closeItineraryModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
+                    <button @click="saveItineraryItem" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
+                </div>
+            </div>
         </div>
-    </footer>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="shoppingModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="closeShoppingModal">
+            <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4">{{ newShoppingItem.id ? '編輯購物項目' : '新增購物項目' }}</h3>
+                <div class="space-y-3 text-sm">
+                    <input v-model="newShoppingItem.name" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="項目名稱">
+                    <input v-model="newShoppingItem.imageURL" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="圖片 URL 或 Instagram 連結">
+                    <div class="flex items-center gap-3 mt-3">
+                        <input type="checkbox" id="shopping-done" v-model="newShoppingItem.isDone" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded">
+                        <label for="shopping-done" class="text-gray-900">已購買</label>
+                    </div>
+                </div>
+                 <div class="mt-5 flex justify-end gap-3">
+                    <button @click="closeShoppingModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
+                    <button @click="saveShoppingItem" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="infoModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="closeInfoModal">
+            <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4">{{ newInfoItem.id ? '編輯實用資訊' : '新增實用資訊' }}</h3>
+                <div class="space-y-3 text-sm">
+                    <input v-model="newInfoItem.title" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="標題">
+                    <textarea v-model="newInfoItem.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="3" placeholder="備註內容..."></textarea>
+                    <div class="flex items-center gap-3 mt-3">
+                        <input type="checkbox" id="info-done" v-model="newInfoItem.isDone" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded">
+                        <label for="info-done" class="text-gray-900">已處理/確認</label>
+                    </div>
+                </div>
+                <div class="mt-5 flex justify-end gap-3">
+                    <button @click="closeInfoModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
+                    <button @click="saveInfoItem" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
   </div>
-    
+
   <script>
     const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
     const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
     const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+    // 修正：確保只有在物件沒有 id 時才生成
     const initializeListWithIds = (list) => list.map(item => ({ ...item, id: item.id || generateId() })); 
     function isInstagramLink(url) {
         if (!url) return false;
         return /^(https?:\/\/(www\.)?instagram\.com\/(p|reel)\/)/i.test(url);
     }
 
-    // --- SUPABASE SETUP (請確認 Key 資訊正確) ---
-    // 您的 Supabase 專案 URL 和 Publishable Key
+    // --- SUPABASE SETUP ---
+    // 您的新 Credentials (v251212-2.01)
     const SUPABASE_URL = 'https://myrhatzdypiwwgmmfbuw.supabase.co'; 
-    const SUPABASE_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuQVVvKi'; 
+    const SUPABASE_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuQVVvKi'; // 您的 Key
     
     // 初始化 Client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -471,11 +549,11 @@
 
     createApp({
       setup(){
-        const appVersion = 'v2.02-Final'; 
+        const appVersion = 'v251212-2.01'; 
         const currentTab = ref('行前');
         
         // Sync Status UI
-        const syncState = ref('loading'); // 啟動時即為 'loading'
+        const syncState = ref('synced'); // 'synced' | 'saving' | 'error' | 'loading'
         const syncStatusText = computed(() => {
             if(syncState.value === 'synced') return '已同步';
             if(syncState.value === 'saving') return '儲存中...';
@@ -498,7 +576,7 @@
 
         const quickItinerary = reactive({ time: '', title: '' });
 
-        // Initial Data Structure (從舊版本中提取的初始數據)
+        // Initial Data Structure (保留初始值，確保第一次載入時有內容)
         const initialItinerary = [
           [
             { title:'抵達台北・入住酒店、休息', note:'西門町永安棧', time:'', address:'台北市萬華區中華路一段52號' },
@@ -526,7 +604,6 @@
             { title:'前往機場（CX443）', note:'搭乘 CX443 回 HKG', time:'15:50', address:'台灣桃園國際機場' }
           ]
         ];
-        // 初始化 itinerary 結構，確保 address 存在
         const itinerary = reactive(initialItinerary.map(dayItems => initializeListWithIds(dayItems).map(item => ({ ...item, address: item.address || '' }))));
         const sortedItinerary = computed(() => {
             const currentDayItinerary = itinerary[selectedDay.value];
@@ -547,16 +624,16 @@
                 selectedMapLocation.value = null;
             }
         }
+        // 修正地圖連結生成邏輯
         function generateMapLink(address, type) {
             if (!address) return '#';
             const encodedAddress = encodeURIComponent(address);
-            // 由於直接使用 Google Maps URL 在某些環境可能被封鎖，這裡使用安全的佔位符
             if (type === 'search') return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
             if (type === 'navigate') return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
             return '#';
         }
 
-        // Active Flight
+        // Active Flight (computed)
         const flights = ref([
           { id: 'outbound', date:'2025-12-15', code:'CX400', depTime:'13:00', fromCode:'HKG', fromTerminal:'T1', toCode:'TPE', toTerminal:'T1', arrTime:'14:50', title:'由香港飛往台北', note:'航班前往台北', type: 'outbound' },
           { id: 'return', date:'2025-12-18', code:'CX443', depTime:'15:50', fromCode:'TPE', fromTerminal:'T1', toCode:'HKG', toTerminal:'T1', arrTime:'18:00', title:'由台北返回香港', note:'回程', type: 'return' }
@@ -572,17 +649,19 @@
           return (currentTab.value === '行前' || currentTab.value === '行程') && (dayType === 'flight-out' || dayType === 'flight-return');
         });
 
-        // Modals Logic
+        // Modals Logic (保持不變)
         const itineraryModalOpen = ref(false);
         const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', address: '', dayIndex: null });
-        function resetItineraryModal() { Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', address: '', dayIndex: selectedDay.value }); }
+        function resetItineraryModal() { Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', address: '', dayIndex: selectedDay.value });
+        }
         function openItineraryModal(item = null) {
             resetItineraryModal();
             if (item) Object.assign(newItineraryItem, deepClone(item));
             newItineraryItem.dayIndex = selectedDay.value;
             itineraryModalOpen.value = true;
         }
-        function closeItineraryModal() { itineraryModalOpen.value = false; }
+        function closeItineraryModal() { itineraryModalOpen.value = false;
+        }
         function saveItineraryItem() {
             if (!newItineraryItem.title.trim()) return;
             const dayItems = itinerary[newItineraryItem.dayIndex];
@@ -644,7 +723,8 @@
             }
             flightModalOpen.value = true;
         }
-        function closeFlightModal(){ flightModalOpen.value = false; }
+        function closeFlightModal(){ flightModalOpen.value = false;
+        }
         function saveFlight(){
             if (!newFlight.code || !newFlight.depTime || !newFlight.type) return;
             const dateStr = new Date(newFlight.date).toISOString().split('T')[0];
@@ -666,7 +746,8 @@
             if (item) Object.assign(newShoppingItem, deepClone(item));
             shoppingModalOpen.value = true;
         }
-        function closeShoppingModal() { shoppingModalOpen.value = false; }
+        function closeShoppingModal() { shoppingModalOpen.value = false;
+        }
         function saveShoppingItem() {
             if (!newShoppingItem.name.trim()) return;
             const itemToSave = { ...deepClone(newShoppingItem), id: newShoppingItem.id || generateId() };
@@ -679,7 +760,8 @@
         function removeShoppingItem(idToRemove) {
             if (!confirm('確定刪除此購物項目嗎？')) return;
             const index = shoppingList.value.findIndex(i => i.id === idToRemove);
-            if (index !== -1) { shoppingList.value.splice(index, 1); saveAll(); }
+            if (index !== -1) { shoppingList.value.splice(index, 1); saveAll();
+            }
         }
 
         const infoModalOpen = ref(false);
@@ -689,7 +771,8 @@
             if (item) Object.assign(newInfoItem, deepClone(item));
             infoModalOpen.value = true;
         }
-        function closeInfoModal() { infoModalOpen.value = false; }
+        function closeInfoModal() { infoModalOpen.value = false;
+        }
         function saveInfoItem() {
             if (!newInfoItem.title.trim()) return;
             const itemToSave = { ...deepClone(newInfoItem), id: newInfoItem.id || generateId() };
@@ -702,7 +785,8 @@
         function removeInfo(idToRemove) {
             if (!confirm('確定刪除此資訊項目嗎？')) return;
             const index = infoList.value.findIndex(i => i.id === idToRemove);
-            if (index !== -1) { infoList.value.splice(index, 1); saveAll(); }
+            if (index !== -1) { infoList.value.splice(index, 1); saveAll();
+            }
         }
 
         // Lists
@@ -733,12 +817,13 @@
                 const amount = Number(e.amount) || 0;
                 let convertedAmount = amount;
                 if (e.currency === 'TWD' && twdToHkdRate > 0) {
-                    // TWD to HKD: amount * rate (TWD:HKD)
                     convertedAmount = amount * twdToHkdRate;
                 } else if (e.currency === 'HKD') {
                     convertedAmount = amount;
                 } else {
-                    return total; // 如果匯率為 0 或非 TWD/HKD，跳過
+                    // 對於其他幣種 (JPY, USD)，由於缺乏即時匯率，暫時忽略或使用 1:1 預估
+                    // 為了穩定性，我們只計算 TWD 和 HKD
+                    return total;
                 }
                 return total + convertedAmount;
             }, 0).toFixed(2);
@@ -810,25 +895,25 @@
         }
 
         async function fetchRate(){
-          // 透過 TWD 取得 HKD 匯率 (Open-Exchange Rates API)
           const API_URL = 'https://open.er-api.com/v6/latest/TWD';
           try {
             const res = await fetch(API_URL);
             if (!res.ok){ rate.value = null; return; }
             const data = await res.json();
             if (data && data.rates && data.rates.HKD){
-              // 計算 TWD 1:HKD 的匯率
-              rate.value = (data.rates.HKD).toFixed(3); 
+              // 修正：確保顯示的匯率是 TWD 換算成 HKD (即 1 TWD = X HKD)
+              rate.value = (1 / data.rates.TWD * data.rates.HKD).toFixed(3); 
               lastRateUpdate.value = new Date().toISOString();
-            } else {
-              rate.value = null;
+            } else if (data && data.rates && data.rates.HKD) {
+              rate.value = (data.rates.HKD).toFixed(3);
+              lastRateUpdate.value = new Date().toISOString();
             }
           } catch(e){ console.warn('rate fail', e); rate.value = null; }
         }
 
         async function fetchWeather(){
           try {
-            const lat = 25.0330, lon = 121.5654; // 台北市經緯度
+            const lat = 25.0330, lon = 121.5654;
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=precipitation_probability&timezone=Asia%2FTaipei`;
             const res = await fetch(url);
             const data = await res.json();
@@ -836,7 +921,6 @@
               weather.temp = Math.round(data.current_weather.temperature);
               weather.code = data.current_weather.weathercode || 0;
               weather.desc = describeWeather(weather.code);
-              // 嘗試抓取當前時間的降雨機率
               if (data.hourly && data.hourly.precipitation_probability){
                 const nowTime = data.current_weather.time.slice(0, 13);
                 const nowIdx = data.hourly.time.findIndex(t => t.startsWith(nowTime));
@@ -898,6 +982,7 @@
 
         // 2. Fetch Data (Pull)
         async function fetchCloudData(isAuto = true) {
+            // 如果正在儲存，先不下載以免衝突
             if (syncState.value === 'saving' && isAuto) return; 
             
             if(!isAuto) syncState.value = 'loading'; 
@@ -905,70 +990,55 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('trip_data')
-                    .select('content, updated_at') 
+                    .select('content')
                     .eq('id', TRIP_ID)
                     .single();
                 
                 if (error) throw error;
                 
-                if (data && data.content) {
+                if (data && data.content && JSON.stringify(data.content) !== JSON.stringify(getAppPayload())) {
                     applyCloudData(data.content);
+                    syncState.value = 'synced';
+                } else {
+                    syncState.value = 'synced'; // 數據一致，維持已同步狀態
                 }
-                
-                syncState.value = 'synced'; 
-
             } catch (e) {
                 console.error('Fetch fail', e);
-                // 如果不是自動檢查，或者當前狀態不是正在儲存，就設定為錯誤
-                if(!isAuto || syncState.value !== 'saving') syncState.value = 'error'; 
+                if(!isAuto) syncState.value = 'error';
             }
         }
         
-        // ⭐️ 關鍵優化區域：應用數據時更嚴格地檢查 JSON 鍵值
+        // 獲取當前 App 狀態 Payload
+        function getAppPayload() {
+            return {
+                itinerary: JSON.parse(JSON.stringify(itinerary)),
+                preTripNotes: preTripNotes.value,
+                shoppingList: shoppingList.value,
+                expenses: expenses.value,
+                infoList: infoList.value,
+                flights: flights.value
+            };
+        }
+
         function applyCloudData(data) {
-            if (!data || typeof data !== 'object') return; 
-            
+            if (!data) return;
             isRemoteUpdate = true; 
             
-            try {
-                // Itinerary: 確保是陣列且長度正確
-                if (Array.isArray(data.itinerary) && data.itinerary.length === itinerary.length){
-                    for (let i = 0; i < itinerary.length; i++) {
-                        if (Array.isArray(data.itinerary[i])) {
-                            // 安全地初始化每個行程項目
-                            const loadedItems = (data.itinerary[i] || []).map(item => ({
-                                ...item, 
-                                id: item.id || generateId(), 
-                                address: item.address || '' // 確保 address 欄位存在
-                            }));
-                            // 安全地替換數組內容 (reactive array splice)
-                            itinerary[i].splice(0, itinerary[i].length, ...loadedItems); 
-                        }
-                    }
-                }
-                
-                // Others (使用 || [] 確保即使數據庫是 null 也會得到空數組)
-                preTripNotes.value = initializeListWithIds(data.preTripNotes || []);
-                shoppingList.value = initializeListWithIds((data.shoppingList || []).map(item => ({
-                    ...item, 
-                    imageURL: item.imageURL || '' 
-                })));
-                flights.value = (data.flights || []).map(f => ({
-                    ...f, 
-                    fromTerminal: f.fromTerminal || '', 
-                    toTerminal: f.toTerminal || ''
-                }));
-                expenses.value = (data.expenses || []).map(e => ({
-                    ...e, 
-                    id: e.id || generateId(), 
-                    currency: e.currency || 'TWD' 
-                }));
-                infoList.value = initializeListWithIds(data.infoList || []);
-
-            } catch(e) {
-                console.error("Error applying cloud data locally:", e);
-                syncState.value = 'error'; 
+            // Itinerary
+            if (data.itinerary && Array.isArray(data.itinerary)){
+              for (let i=0;i<4;i++){
+                const loadedItems = (data.itinerary[i] || []).map(item => ({...item, id: item.id || generateId(), address: item.address || '' }));
+                itinerary[i].splice(0, itinerary[i].length, ...loadedItems);
+              }
             }
+            // Others
+            if (data.preTripNotes) preTripNotes.value = initializeListWithIds(data.preTripNotes);
+            if (data.shoppingList) shoppingList.value = initializeListWithIds(data.shoppingList.map(item => ({...item, imageURL: item.imageURL || '' })));
+            if (data.flights) flights.value = data.flights;
+            if (data.expenses) {
+                expenses.value = data.expenses.map(e => ({...e, id: e.id || generateId(), currency: e.currency || 'TWD' }));
+            }
+            if (data.infoList) infoList.value = initializeListWithIds(data.infoList);
             
             setTimeout(() => { isRemoteUpdate = false; }, 300);
         }
@@ -983,25 +1053,17 @@
           fetchCloudData(false);
 
           fetchRate(); fetchWeather();
-          setInterval(fetchRate, 10*60*1000); // 10分鐘更新一次匯率
-          setInterval(fetchWeather, 10*60*1000); // 10分鐘更新一次天氣
+          setInterval(fetchRate, 10*60*1000);
+          setInterval(fetchWeather, 10*60*1000);
 
-          // 3. Polling (每 15 秒檢查一次，自動同步)
+          // 3. Polling (每 15 秒檢查一次)
           setInterval(() => {
               fetchCloudData(true);
           }, 15000);
         });
 
-        // 修正後的 Watch for changes to trigger Save: 只監聽核心數據模型
-        watch([
-          preTripNotes, 
-          shoppingList, 
-          expenses, 
-          infoList, 
-          flights, 
-          // 監聽行程數據，將其轉換為 JSON 字符串以觸發 deep watch
-          () => itinerary.map(d => JSON.stringify(d)) 
-        ], () => { 
+        // Watch for changes to trigger Save
+        watch([itinerary, preTripNotes, shoppingList, expenses, infoList, flights], () => { 
           saveAll();
         }, { deep:true });
 
@@ -1016,7 +1078,7 @@
           expenses, newExpense, addExpense, removeExpense, toggleExpenseDone, totalExpense,
           infoList, infoModalOpen, newInfoItem, openInfoModal, closeInfoModal, saveInfoItem, removeInfo,
           activeFlight, shouldShowFlightCard, weather, weatherIconClass, rate, formattedRate, lastRateUpdateLabel,
-          openAddModal, flightModalOpen, newFlight, openFlightModal, closeFlightModal, saveFlight, 
+          openAddModal, flightModalOpen, newFlight, openFlightModal, closeFlightModal, saveFlight, // removeFlight
         };
       }
     }).mount('#app');
