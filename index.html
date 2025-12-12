@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1.0,user-scalable=no" />
-  <title>eMenu Taipei v1.02 — 行程助手</title>
+  <title>eMenu Taipei v1.04 — 行程助手</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -205,7 +205,7 @@
           <div v-if="currentTab === '行前'">
             <h3 class="text-base font-bold mb-2">✅ 行前準備清單</h3>
             <ul class="space-y-2">
-              <li v-for="(note, i) in preTripNotes" :key="i" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
+              <li v-for="(note, i) in preTripNotes" :key="note.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-center">
                 <div class="flex items-center gap-2">
                   <i class="ph text-xl cursor-pointer" 
                      :class="note.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
@@ -213,7 +213,7 @@
                   </i>
                   <span class="font-medium" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
                 </div>
-                <button class="text-red-500 text-base" @click="removePreNote(i)"><i class="ph ph-trash"></i></button>
+                <button class="text-red-500 text-base" @click="removePreNote(note.id)"><i class="ph ph-trash"></i></button>
               </li>
               <li v-if="preTripNotes.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">
                 請新增行前準備事項！
@@ -331,7 +331,7 @@
                 <div class="flex items-start gap-3">
                  <i class="ph text-xl cursor-pointer" 
                      :class="e.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
-                     @click="toggleExpenseDone(i)"></i>
+                     @click="toggleExpenseDone(e.id)"></i>
                   <div>
                     <div class="font-medium" :class="{'task-done': e.isDone}">{{ e.name }}</div>
                     <div class="text-xs text-gray-500">{{ e.category }} · {{ e.date }}</div>
@@ -339,7 +339,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                   <div class="font-bold">{{ e.currency }} {{ e.amount }}</div>
-                  <button @click="removeExpense(i)" class="text-red-500"><i class="ph ph-trash"></i></button>
+                  <button @click="removeExpense(e.id)" class="text-red-500"><i class="ph ph-trash"></i></button>
                 </div>
               </li>
               <li v-if="expenses.length === 0" class="p-3 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">暫無記錄</li
@@ -498,7 +498,7 @@
 
     createApp({
       setup(){
-        const appVersion = 'v251211-1.02';
+        const appVersion = 'v251211-1.04 (Cloud Sync)';
         const currentTab = ref('行前');
         const days = reactive([
           { week:'Mon', date:'15', label:'12/15 (一)', type: 'flight-out' },
@@ -754,8 +754,8 @@
           { name:'肉乾', isDone: true, imageURL: '' }
         ]));
         const expenses = ref([
-          { id: Date.now()+1, name:'雅香火鍋', amount: 300, category:'食物', date: '12/15', isDone:false, currency: 'TWD' },
-          { id: Date.now()+2, name:'Taxi 機場->酒店', amount: 250, category:'交通', date: '12/15', isDone:false, currency: 'TWD' }
+          { id: generateId(), name:'雅香火鍋', amount: 300, category:'食物', date: '12/15', isDone:false, currency: 'TWD' },
+          { id: generateId(), name:'Taxi 機場->酒店', amount: 250, category:'交通', date: '12/15', isDone:false, currency: 'TWD' }
         ]);
         const newExpense = reactive({ name:'', amount:null, currency:'TWD', category:'食物' });
         const infoList = ref(initializeListWithIds([
@@ -793,7 +793,10 @@
         // Simple list functions
         function selectDay(i){ selectedDay.value = i; selectedMapLocation.value = null; }
         function addPreNote(){ if (!newPreNote.value.trim()) return; preTripNotes.value.push({ id:generateId(), name:newPreNote.value.trim(), isDone:false }); newPreNote.value=''; saveAll(); }
-        function removePreNote(i){ preTripNotes.value.splice(i,1); saveAll(); }
+        function removePreNote(idToRemove){ 
+             const index = preTripNotes.value.findIndex(i => i.id === idToRemove);
+             if (index !== -1) { preTripNotes.value.splice(index,1); saveAll(); }
+        }
         function addExpense(){
           if (!newExpense.name.trim() || !newExpense.amount) return;
           const d = new Date();
@@ -802,19 +805,23 @@
           newExpense.name = ''; newExpense.amount = null; newExpense.currency = 'TWD'; newExpense.category = '食物';
           saveAll();
         }
-        function removeExpense(i){ expenses.value.splice(i,1); saveAll(); }
-        function toggleExpenseDone(i){ expenses.value[i].isDone = !expenses.value[i].isDone; saveAll(); }
+        function removeExpense(idToRemove){ 
+             const index = expenses.value.findIndex(i => i.id === idToRemove);
+             if (index !== -1) { expenses.value.splice(index,1); saveAll(); }
+        }
+        function toggleExpenseDone(idToToggle){ 
+            const item = expenses.value.find(i => i.id === idToToggle);
+            if (item) item.isDone = !item.isDone;
+            saveAll(); 
+        }
 
         // openAdd: smart behaviour logic
         function openAddModal(){
           if (currentTab.value === '行前'){ 
-             // Logic Check: This code path will no longer be hit due to v-if on the button, 
-             // but kept for completeness in case it's used elsewhere.
              if (newPreNote.value) addPreNote();
              else { currentTab.value = '行程'; }
           }
           else if (currentTab.value === '行程'){ 
-             // Logic Check for Flight Day
              if (isFlightDay.value) {
                  const flightId = activeFlight.value ? activeFlight.value.id : null; 
                  openFlightModal(flightId);
@@ -879,8 +886,108 @@
           return '晴朗';
         }
 
-        // Storage
-        const STORAGE_KEY = 'emenu-taipei-data-v7';
+        // ===========================================
+        // ✅ Supabase 雲端同步架構 (取代 LocalStorage)
+        // ----------------------------------------------------
+        // ⚠️ 重要提醒：請將下方 YOUR_SUPABASE_ANON_KEY 替換成您在 Supabase API 設定頁面找到的【anon public】金鑰 (一串很長的字串)
+        // ----------------------------------------------------
+        const SUPABASE_URL = 'https://qzsuafpwwstjpeenppic.supabase.co'; // 專案 URL 已確認
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // ⬅️ **請務必替換**此處的 Public Key！
+        const TABLE_NAME = 'trip_data';
+        const DATA_ROW_ID = 1; // 步驟二中建立的單一共用 ID
+        
+        /**
+         * 擷取雲端資料 (GET)
+         * @returns {Object|null} 載入的資料或 null
+         */
+        async function fetchCloudData(){
+            console.log("嘗試從 Supabase 載入資料...");
+            
+            if (SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                console.warn('⚠️ 尚未設定 Public Key，將使用本地備份。');
+            }
+
+            const url = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}?id=eq.${DATA_ROW_ID}&select=data_json`;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    console.error('Supabase 讀取失敗:', res.statusText);
+                }
+                
+                const data = await res.json();
+                
+                if (data && data.length > 0 && data[0].data_json) {
+                    console.log('Supabase 載入成功。');
+                    return data[0].data_json;
+                }
+                
+            } catch(e) { 
+                console.error('Supabase 讀取請求錯誤:', e); 
+            }
+            
+            // 如果雲端載入失敗，嘗試載入本地備份
+            try {
+                const raw = localStorage.getItem('emenu-taipei-data-v7-backup');
+                if (raw) {
+                     console.log('使用本地備份資料。');
+                     return JSON.parse(raw);
+                }
+            } catch(e) {}
+
+            return null; 
+        }
+
+        /**
+         * 儲存資料到雲端 (PATCH/UPDATE)
+         * @param {Object} payload 要儲存的 JSON 物件
+         */
+        async function saveCloudData(payload){
+            console.log("嘗試儲存資料到 Supabase...");
+
+            if (SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                console.warn('⚠️ 尚未設定 Public Key，僅儲存至本地備份。');
+            }
+            
+            const url = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}?id=eq.${DATA_ROW_ID}`;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'PATCH', // 使用 PATCH 來更新現有資料
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal' // 要求最小回覆
+                    },
+                    body: JSON.stringify({ data_json: payload })
+                });
+
+                if (res.ok) {
+                    console.log('資料已成功同步到 Supabase！');
+                } else {
+                    console.error('Supabase 儲存失敗:', res.statusText, await res.text());
+                }
+                
+            } catch(e) { 
+                console.error('Supabase 儲存請求錯誤:', e); 
+            }
+            
+            // 為了防止 API 失敗，在本地儲存一個備份
+            try {
+                 localStorage.setItem('emenu-taipei-data-v7-backup', JSON.stringify(payload));
+            } catch(e){ console.warn('備份失敗', e); }
+        }
+
+        // 主儲存函式 (現在呼叫雲端儲存)
         function saveAll(){
           const payload = {
             currentTab: currentTab.value,
@@ -894,45 +1001,52 @@
             rate: rate.value,
             weather: JSON.parse(JSON.stringify(weather))
           };
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); }
-          catch(e){ console.warn('save fail', e); }
-        }
-        function loadAll(){
-          try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
-            const p = JSON.parse(raw);
-            if (p.currentTab) currentTab.value = p.currentTab;
-            if (typeof p.selectedDay === 'number') selectedDay.value = p.selectedDay;
-            if (p.itinerary && Array.isArray(p.itinerary)){
-              for (let i=0;i<4;i++){
-                const loadedItems = (p.itinerary[i] || []).map(item => ({...item, id: item.id || generateId(), address: item.address || '' }));
-                itinerary[i].splice(0, itinerary[i].length, ...loadedItems);
-              }
-            }
-            if (p.preTripNotes) preTripNotes.value = p.preTripNotes.map(item => ({...item, id: item.id || generateId()}));
-            if (p.shoppingList) shoppingList.value = p.shoppingList.map(item => ({...item, id: item.id || generateId(), imageURL: item.imageURL || '' }));
-            if (p.flights) flights.value = p.flights;
-            if (p.expenses) {
-                expenses.value = p.expenses.map(e => ({...e, id: e.id || generateId(), currency: e.currency || 'TWD' }));
-            }
-            if (p.infoList) infoList.value = p.infoList.map(item => ({...item, id: item.id || generateId()}));
-            if (p.rate) rate.value = p.rate;
-            if (p.weather) {
-              weather.temp = p.weather.temp || weather.temp;
-              weather.desc = p.weather.desc || weather.desc;
-              weather.rain = p.weather.rain || weather.rain;
-              weather.code = p.weather.code || weather.code;
-            }
-          } catch(e){ console.warn('load fail', e); }
+          saveCloudData(payload); // <--- 呼叫雲端儲存
         }
 
+        // 主載入函式 (現在呼叫雲端載入)
+        async function loadAll(){
+          const p = await fetchCloudData(); // <--- 呼叫雲端載入
+          
+          if (!p) {
+              console.log("未載入到雲端資料，使用預設初始資料。");
+              return;
+          }
+
+          if (p.currentTab) currentTab.value = p.currentTab;
+          if (typeof p.selectedDay === 'number') selectedDay.value = p.selectedDay;
+          if (p.itinerary && Array.isArray(p.itinerary)){
+            for (let i=0;i<4;i++){
+              const loadedItems = (p.itinerary[i] || []).map(item => ({...item, id: item.id || generateId(), address: item.address || '' }));
+              itinerary[i].splice(0, itinerary[i].length, ...loadedItems);
+            }
+          }
+          if (p.preTripNotes) preTripNotes.value = p.preTripNotes.map(item => ({...item, id: item.id || generateId()}));
+          if (p.shoppingList) shoppingList.value = p.shoppingList.map(item => ({...item, id: item.id || generateId(), imageURL: item.imageURL || '' }));
+          if (p.flights) flights.value = p.flights;
+          if (p.expenses) {
+              expenses.value = p.expenses.map(e => ({...e, id: e.id || generateId(), currency: e.currency || 'TWD' }));
+          }
+          if (p.infoList) infoList.value = p.infoList.map(item => ({...item, id: item.id || generateId()}));
+          if (p.rate) rate.value = p.rate;
+          if (p.weather) {
+            weather.temp = p.weather.temp || weather.temp;
+            weather.desc = p.weather.desc || weather.desc;
+            weather.rain = p.weather.rain || weather.rain;
+            weather.code = p.weather.code || weather.code;
+          }
+        }
+        
         onMounted(()=>{
           loadAll();
           fetchRate(); fetchWeather();
           setInterval(fetchRate, 10*60*1000);
           setInterval(fetchWeather, 10*60*1000);
+          // ✅ 增加自動同步（Polling），實現近似即時的同步
+          setInterval(loadAll, 30 * 1000); // 每 30 秒自動從雲端載入最新資料
         });
+        
+        // 任何變動時觸發儲存 (現為雲端儲存)
         watch([currentTab, selectedDay, () => itinerary.map(d=>d.length), preTripNotes, shoppingList, expenses, infoList, flights, rate, () => weather.temp], () => { 
           saveAll();
         }, { deep:true });
