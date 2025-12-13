@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1.0,user-scalable=no" />
-  <title>eMenu Taipei v2.10 — 雲端版</title>
+  <title>eMenu Taipei v2.11 — 雲端版</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -88,6 +88,7 @@
             <div class="flex items-center gap-2 mt-0.5">
                 <p class="text-xs text-gray-500 opacity-50">{{ appVersion }}</p>
                 <div class="flex items-center gap-2">
+            
                     <div class="flex items-center gap-1 bg-white/60 px-2 py-0.5 rounded-full border border-gray-200">
                         <div class="w-2 h-2 rounded-full" 
                             :class="{
@@ -152,7 +153,7 @@
           </div>
           <div class="flex h-24">
             <div class="flex-1 flex items-center justify-start">
-               <div class="text-[64px] font-bold text-gray-800 leading-none">{{ weather.temp }}°</div>
+                <div class="text-[64px] font-bold text-gray-800 leading-none">{{ weather.temp }}°</div>
             </div>
             <div class="flex-shrink-0 w-24 flex items-center justify-center">
                 <i :class="weatherIconClass" class="text-[64px] text-sky-500 leading-none"></i>
@@ -209,7 +210,7 @@
                          <i class="ph ph-map-pin-fill text-red-500 text-xl"></i>
                          <h4 class="text-lg font-bold text-gray-800">{{ selectedMapLocation.title }}</h4>
                     </div>
-                   <p class="text-sm text-gray-500 pl-7">{{ selectedMapLocation.address }}</p>
+                 <p class="text-sm text-gray-500 pl-7">{{ selectedMapLocation.address }}</p>
                 </div>
                 <div class="flex justify-center gap-3">
                     <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank"
@@ -277,6 +278,7 @@
                       <i class="ph ph-map-pin-line mr-1"></i> 點擊導航
                   </div>
                 </div>
+                
                 <div class="flex items-center gap-2">
                     <div class="text-sm font-bold text-gray-700 mr-2">{{ it.time || '--:--' }}</div>
                     <button @click.stop="openItineraryModal(it)" class="text-gray-400 text-lg hover:text-sky-600 transition p-1"><i class="ph ph-pencil-simple"></i></button>
@@ -299,7 +301,7 @@
             <h3 class="text-base font-bold mb-2">🛒 購物清單</h3>
             <ul class="space-y-2">
               <li v-for="(item, i) in shoppingList" :key="item.id" class="p-3 rounded-lg bg-white/80 border flex justify-between items-start">
-               <div class="flex items-start gap-3 flex-1">
+                <div class="flex items-start gap-3 flex-1">
                   <i class="ph text-xl cursor-pointer mt-1 flex-shrink-0" 
                      :class="item.isDone ? 'ph-check-circle-fill text-emerald-500' : 'ph-circle text-gray-400'" 
                      @click="item.isDone = !item.isDone">
@@ -329,8 +331,8 @@
 
           <div v-if="currentTab === '記帳'">
             
-            <div class="expense-card mb-4 relative">
-                <button @click="openExpenseModal" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition">
+             <div class="expense-card mb-4 relative">
+                <button @click="openExpenseModal(null)" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition">
                     <i class="ph ph-plus text-xl font-bold"></i>
                 </button>
 
@@ -340,7 +342,7 @@
                     <div class="text-blue-200/80 text-sm">TWD {{ totalExpense.twd }}</div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4 border-t border-white/20 pt-4">
+                 <div class="grid grid-cols-2 gap-4 border-t border-white/20 pt-4">
                     <div class="text-center border-r border-white/20">
                         <div class="text-blue-100/80 text-[10px] mb-0.5"><i class="ph ph-credit-card mr-1"></i>信用卡</div>
                         <div class="text-lg font-bold">${{ totalExpense.creditHkd }}</div>
@@ -352,7 +354,7 @@
                         <div class="text-blue-200/80 text-[10px]">TWD {{ totalExpense.cashTwd }}</div>
                     </div>
                 </div>
-            </div>
+             </div>
 
             <div class="bg-white/50 p-1 rounded-xl flex mb-3 backdrop-blur-sm">
                 <button v-for="f in ['all', 'credit', 'cash']" :key="f"
@@ -375,11 +377,12 @@
                         <div class="text-xs text-gray-500">{{ e.category }} · {{ e.date }}</div>
                     </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <div class="font-bold text-gray-800">{{ e.currency }} {{ e.amount }}</div>
-                    </div>
-                    <button @click="removeExpense(e.id)" class="text-red-400 hover:text-red-600"><i class="ph ph-trash"></i></button>
+                    <div class="flex items-center gap-2">
+                        <div class="text-right mr-1">
+                             <div class="font-bold text-gray-800">{{ e.currency }} {{ e.amount }}</div>
+                        </div>
+                        <button @click="openExpenseModal(e)" class="text-gray-400 hover:text-sky-600 p-1"><i class="ph ph-pencil-simple"></i></button>
+                        <button @click="removeExpense(e.id)" class="text-red-400 hover:text-red-600 p-1"><i class="ph ph-trash"></i></button>
                     </div>
                 </li>
                 <li v-if="filteredExpenses.length === 0" class="p-4 text-sm text-gray-500 text-center border-dashed border-2 rounded-lg">
@@ -410,7 +413,7 @@
                              <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 rounded-lg transition"></div>
                         </div>
                     </div>
-                  </div>
+                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                     <button @click="openInfoModal(it)" class="text-gray-500 text-base hover:text-sky-600 transition"><i class="ph ph-pencil-simple"></i></button>
@@ -425,7 +428,7 @@
       </div>
 
       <div class="h-24 flex items-end justify-center pb-4">
-        <div class="text-[10px] text-gray-400">Ver: {{ appVersion }}</div>
+         <div class="text-[10px] text-gray-400">Ver: {{ appVersion }}</div>
       </div>
     </main>
 
@@ -456,7 +459,7 @@
             <div class="flex items-center gap-3 mt-3">
               <input type="checkbox" id="pre-note-done" v-model="editingPreNote.isDone" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded">
               <label for="pre-note-done" class="text-gray-900">已完成</label>
-            </div>
+             </div>
           </div>
           <div class="mt-5 flex justify-end gap-3">
             <button @click="closePreNoteModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
@@ -473,30 +476,30 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex gap-3">
                         <select v-model="newFlight.type" class="flex-1 p-2 rounded-lg border bg-white text-base">
-                           <option value="outbound">去程 (HKG -> TPE)</option>
+                            <option value="outbound">去程 (HKG -> TPE)</option>
                             <option value="return">回程 (TPE -> HKG)</option>
                         </select>
                         <input v-model="newFlight.date" type="date" class="flex-1 p-2 rounded-lg border bg-white text-base">
-                    </div>
+                     </div>
                     <input v-model="newFlight.code" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="航班代碼 (例: CX400)">
                     <input v-model="newFlight.title" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="航班名稱/備註">
                     <div class="flex gap-3">
-                        <input v-model="newFlight.fromCode" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="出發 (HKG)">
+                         <input v-model="newFlight.fromCode" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="出發 (HKG)">
                         <input v-model="newFlight.toCode" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="抵達 (TPE)">
                     </div>
-                    <div class="flex gap-3">
+                     <div class="flex gap-3">
                         <input v-model="newFlight.fromTerminal" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="出發航廈">
                         <input v-model="newFlight.toTerminal" class="flex-1 min-w-0 p-2 rounded-lg border bg-white text-base" placeholder="抵達航廈">
                     </div>
-                    <div class="flex gap-3">
+                     <div class="flex gap-3">
                         <input v-model="newFlight.depTime" type="time" class="flex-1 p-2 rounded-lg border bg-white text-base">
                         <input v-model="newFlight.arrTime" type="time" class="flex-1 p-2 rounded-lg border bg-white text-base">
                     </div>
-                    <textarea v-model="newFlight.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="2" placeholder="備註..."></textarea>
+                     <textarea v-model="newFlight.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="2" placeholder="備註..."></textarea>
                 </div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button @click="closeFlightModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
-                    <button @click="saveFlight" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
+                     <button @click="saveFlight" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
                 </div>
             </div>
         </div>
@@ -512,7 +515,7 @@
                              <option v-for="(d, i) in days" :key="i" :value="i">
                                  12/{{ d.date }} ({{ d.week }}) — {{ d.label }}
                              </option>
-                        </select>
+                         </select>
                     </div>
 
                     <div class="flex gap-3">
@@ -521,12 +524,12 @@
                     </div>
                     <input v-model="newItineraryItem.address" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="Google Map 地址 (選填)">
                     <textarea v-model="newItineraryItem.note" class="w-full p-2 rounded-lg border bg-white text-base" rows="3" placeholder="備註..."></textarea>
-                </div>
+                 </div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button @click="closeItineraryModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
                     <button @click="saveItineraryItem" class="px-4 py-2 bg-sky-600 text-white rounded-lg">儲存</button>
                 </div>
-            </div>
+             </div>
         </div>
     </transition>
 
@@ -554,12 +557,12 @@
                              <img :src="tempUploadPreview.shopping" class="h-16 w-16 object-cover rounded border">
                              <div class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5"><i class="ph ph-check text-xs"></i></div>
                          </div>
-                    </div>
+                     </div>
 
                     <div class="flex items-center gap-3 mt-1">
                         <input type="checkbox" id="shopping-done" v-model="newShoppingItem.isDone" class="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded">
                         <label for="shopping-done" class="text-gray-900">已購買</label>
-                    </div>
+                     </div>
                 </div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button @click="closeShoppingModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
@@ -574,7 +577,7 @@
     <transition name="fade">
         <div v-if="expenseModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="closeExpenseModal">
             <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
-                <h3 class="text-xl font-bold mb-4">新增消費記錄</h3>
+                <h3 class="text-xl font-bold mb-4">{{ newExpense.id ? '編輯消費記錄' : '新增消費記錄' }}</h3>
                 <div class="space-y-4 text-sm">
                     <input v-model="newExpense.name" class="w-full p-2 rounded-lg border bg-white text-base" placeholder="消費名稱 (例如：雅香火鍋)">
                     
@@ -600,10 +603,17 @@
                             <option value="credit_card">信用卡</option>
                         </select>
                     </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-xs text-gray-500 font-bold mb-1">日期</label>
+                        <input v-model="newExpense.date" type="date" class="w-full p-2 rounded-lg border bg-white/70 text-base">
+                    </div>
                 </div>
                 <div class="mt-5 flex justify-end gap-3">
                     <button @click="closeExpenseModal" class="px-4 py-2 text-gray-600 rounded-lg border bg-gray-100">取消</button>
-                    <button @click="addExpense" class="px-4 py-2 bg-blue-600 text-white rounded-lg">加入</button>
+                    <button @click="saveExpense" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                        {{ newExpense.id ? '儲存' : '加入' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -630,7 +640,7 @@
                         <div v-if="uploadStatus.info" class="text-xs text-blue-500 mt-1 animate-pulse">
                             {{ uploadStatus.info }}
                         </div>
-                        <div v-if="tempUploadPreview.info" class="mt-2 relative inline-block">
+                         <div v-if="tempUploadPreview.info" class="mt-2 relative inline-block">
                              <img :src="tempUploadPreview.info" class="h-16 w-16 object-cover rounded border">
                              <div class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5"><i class="ph ph-check text-xs"></i></div>
                          </div>
@@ -685,7 +695,7 @@
 
     createApp({
       setup() {
-        const appVersion = ref('v251213-2.10'); // **UPDATED VERSION**
+        const appVersion = ref('v251213-2.11'); // **UPDATED VERSION**
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -745,7 +755,6 @@
             return timeA.localeCompare(timeB);
           });
         });
-
         // Map logic
         const selectedMapLocation = ref(null);
         function showLocationOnMap(item) {
@@ -775,7 +784,7 @@
           return null;
         });
         const shouldShowFlightCard = computed(() => activeFlight.value !== null && ['行前', '行程'].includes(currentTab.value));
-
+        
         // --- FILE UPLOAD LOGIC ---
         const isUploading = ref(false);
         const uploadStatus = reactive({ shopping: '', info: '' });
@@ -801,14 +810,12 @@
                     .storage
                     .from('uploads')
                     .upload(fileName, file);
-                
                 if (error) throw error;
                 
                 const { data: publicData } = supabaseClient
                     .storage
                     .from('uploads')
                     .getPublicUrl(fileName);
-                    
                 return publicData.publicUrl;
             } catch (e) {
                 console.error('Upload failed:', e);
@@ -841,16 +848,14 @@
         ]));
         const shoppingModalOpen = ref(false);
         const newShoppingItem = reactive({ id: null, name: '', imageURL: '', isDone: false });
-
-
+        
         const expenses = ref([
           { id: Date.now()+1, name:'雅香火鍋', amount: 300, category:'餐飲', date: '12/15', isDone:false, currency: 'TWD', paymentMethod: 'cash' },
           { id: Date.now()+2, name:'Taxi 機場->酒店', amount: 250, category:'交通', date: '12/15', isDone:false, currency: 'TWD', paymentMethod: 'credit_card' }
         ]);
         const expenseModalOpen = ref(false);
         const expenseFilter = ref('all'); // 'all', 'credit', 'cash'
-        const newExpense = reactive({ name:'', amount:null, currency:'TWD', category:'餐飲', paymentMethod: 'cash' });
-        
+        const newExpense = reactive({ id: null, name:'', amount:null, currency:'TWD', category:'餐飲', paymentMethod: 'cash', date: '' });
         const infoList = ref(initializeListWithIds([
           { title:'西門町永安棧 (電話)', note:'+886 2 2352 3090', isDone:false, imageURL: '' },
         ]));
@@ -880,7 +885,6 @@
 
           // Convert back to TWD for display (approx)
           const toTWD = (hkdVal) => (hkdVal / twdToHkdRate).toFixed(0);
-
           return {
               hkd: totalHkd.toFixed(0),
               twd: toTWD(totalHkd),
@@ -896,7 +900,7 @@
             if (expenseFilter.value === 'credit') return expenses.value.filter(e => e.paymentMethod === 'credit_card');
             return expenses.value.filter(e => e.paymentMethod !== 'credit_card'); // Default to cash
         });
-
+        
         // Weather & Rate
         const weather = reactive({ temp:'--', desc:'載入中...', rain:0, code:0 });
         const weatherIconClass = computed(()=>{
@@ -914,7 +918,6 @@
           if (!lastRateUpdate.value) return '—';
           return new Date(lastRateUpdate.value).toLocaleTimeString('zh-HK');
         });
-
         function selectDay(i){
           selectedDay.value = i;
           selectedMapLocation.value = null;
@@ -934,7 +937,6 @@
               dayIndex: selectedDay.value, 
               originalDayIndex: null 
           });
-
           if (item) {
               Object.assign(newItineraryItem, deepClone(item));
               newItineraryItem.dayIndex = selectedDay.value; 
@@ -948,7 +950,6 @@
         
         function saveItineraryItem() {
           if (!newItineraryItem.title.trim()) return;
-
           const itemToSave = {
             id: newItineraryItem.id || generateId(),
             title: newItineraryItem.title.trim(),
@@ -956,7 +957,6 @@
             time: newItineraryItem.time.trim(),
             address: newItineraryItem.address.trim(),
           };
-
           const targetDayIdx = newItineraryItem.dayIndex;
           const originalDayIdx = newItineraryItem.originalDayIndex;
 
@@ -1005,8 +1005,7 @@
             id: generateId(),
             title: quickItinerary.title.trim(),
             note: '',
-            time: quickItinerary.time ||
-            '',
+            time: quickItinerary.time || '',
             address: ''
           };
           dayItems.push(itemToSave);
@@ -1023,7 +1022,6 @@
           const dayType = days[selectedDay.value]?.type;
           if (dayType === 'flight-out') newFlight.type = 'outbound';
           else if (dayType === 'flight-return') newFlight.type = 'return';
-
           let flight = flights.value.find(f => f.id === flightId);
           if (!flight && flightId === 'new') { 
              flight = flights.value.find(f => f.type === newFlight.type);
@@ -1057,6 +1055,7 @@
             else if (currentTab.value === '購物') openShoppingModal();
             else if (currentTab.value === '資訊') openInfoModal();
             else if (currentTab.value === '行前') addPreNote(); 
+            else if (currentTab.value === '記帳') openExpenseModal(null); 
         }
 
         // Shopping
@@ -1074,7 +1073,6 @@
         }
         async function saveShoppingItem() {
           if (!newShoppingItem.name.trim()) return;
-          
           if (pendingUploadFiles.shopping) {
               isUploading.value = true;
               uploadStatus.shopping = '正在上傳...';
@@ -1118,7 +1116,6 @@
         }
         async function saveInfoItem() {
           if (!newInfoItem.title.trim()) return;
-
           if (pendingUploadFiles.info) {
               isUploading.value = true;
               uploadStatus.info = '正在上傳...';
@@ -1155,7 +1152,6 @@
         const newPreNote = ref(''); 
         const preNoteModalOpen = ref(false);
         const editingPreNote = reactive({ id: null, name: '', isDone: false });
-
         function addPreNote() {
             if (!newPreNote.value.trim()) return;
             preTripNotes.value.push({ id: generateId(), name: newPreNote.value.trim(), isDone: false });
@@ -1192,21 +1188,63 @@
         }
 
 
-        // Expenses (Updated for Modal & Payment Method)
-        function openExpenseModal() {
-            // Reset
-            Object.assign(newExpense, { name:'', amount:null, currency:'TWD', category:'餐飲', paymentMethod: 'cash' });
+        // Expenses (UPDATED with Edit + Date Logic)
+        function openExpenseModal(item = null) {
+            if(item) {
+                // EDIT MODE
+                // Convert 12/15 format to 2025-12-15 for input type="date"
+                let dateVal = '';
+                if(item.date) {
+                    const [m, d] = item.date.split('/');
+                    if(m && d) {
+                        dateVal = `2025-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+                    }
+                }
+                
+                Object.assign(newExpense, { 
+                    id: item.id,
+                    name: item.name, 
+                    amount: item.amount, 
+                    currency: item.currency, 
+                    category: item.category, 
+                    paymentMethod: item.paymentMethod,
+                    date: dateVal
+                });
+            } else {
+                // NEW MODE (Auto Date)
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                
+                Object.assign(newExpense, { 
+                    id: null,
+                    name:'', 
+                    amount:null, 
+                    currency:'TWD', 
+                    category:'餐飲', 
+                    paymentMethod: 'cash',
+                    date: todayStr 
+                });
+            }
             expenseModalOpen.value = true;
         }
         function closeExpenseModal() {
             expenseModalOpen.value = false;
         }
-        function addExpense(){
+        function saveExpense(){
           if (!newExpense.name.trim() || !newExpense.amount) return;
-          const d = new Date();
-          const dateString = `${d.getMonth() + 1}/${d.getDate()}`;
-          const expenseToSave = {
-            id: generateId(),
+          
+          // Format date back to "M/D"
+          let dateString = '';
+          if (newExpense.date) {
+             const [y, m, d] = newExpense.date.split('-');
+             dateString = `${parseInt(m)}/${parseInt(d)}`;
+          } else {
+             const dObj = new Date();
+             dateString = `${dObj.getMonth() + 1}/${dObj.getDate()}`;
+          }
+
+          const itemToSave = {
+            id: newExpense.id || generateId(),
             name: newExpense.name.trim(),
             amount: Number(newExpense.amount),
             currency: newExpense.currency,
@@ -1215,7 +1253,16 @@
             date: dateString,
             isDone: false,
           };
-          expenses.value.unshift(expenseToSave); // Add to top
+          
+          if (newExpense.id) {
+              // Update existing
+              const index = expenses.value.findIndex(e => e.id === newExpense.id);
+              if (index !== -1) expenses.value.splice(index, 1, itemToSave);
+          } else {
+              // Create new (Top of list)
+              expenses.value.unshift(itemToSave);
+          }
+          
           closeExpenseModal();
           saveAll();
         }
@@ -1226,7 +1273,7 @@
         }
 
         // --- CLOUD SYNC ---
-        const TRIP_ID = 'taipei_trip2025'; 
+        const TRIP_ID = 'taipei_trip2025';
         let isRemoteUpdate = false;
         let debounceTimer = null;
 
@@ -1262,11 +1309,10 @@
           }
           if (data.infoList) infoList.value = initializeListWithIds(data.infoList);
           if (data.flights) flights.value = initializeListWithIds(data.flights);
-
           if (syncState.value === 'loading' || syncState.value === 'error') {
             syncState.value = 'synced';
           }
-          setTimeout(() => { isRemoteUpdate = false; }, 300); 
+          setTimeout(() => { isRemoteUpdate = false; }, 300);
         }
 
         async function saveAll() {
@@ -1300,7 +1346,6 @@
               .select('content')
               .eq('id', TRIP_ID)
               .single();
-
             if (error) throw error;
 
             if (data && data.content && JSON.stringify(data.content) !== JSON.stringify(getAppPayload())) {
@@ -1377,9 +1422,7 @@
           setInterval(fetchWeather, 10*60*1000);
           setInterval(() => { fetchCloudData(true); }, 15000);
         });
-
         watch([itinerary, preTripNotes, shoppingList, expenses, infoList, flights], () => { saveAll(); }, { deep:true });
-
         return {
           appVersion, syncState, syncStatusText, forceReloadCloud,
           currentTab, days, selectedDay, selectDay, isFlightDay,
@@ -1389,7 +1432,7 @@
           quickItinerary, addQuickItinerary,
           selectedMapLocation, showLocationOnMap, generateMapLink,
           shoppingList, shoppingModalOpen, newShoppingItem, openShoppingModal, closeShoppingModal, saveShoppingItem, removeShoppingItem, isInstagramLink,
-          expenses, newExpense, addExpense, removeExpense, expenseFilter, filteredExpenses, totalExpense,
+          expenses, newExpense, saveExpense, removeExpense, expenseFilter, filteredExpenses, totalExpense,
           expenseModalOpen, openExpenseModal, closeExpenseModal,
           infoList, infoModalOpen, newInfoItem, openInfoModal, closeInfoModal, saveInfoItem, removeInfo,
           activeFlight, shouldShowFlightCard, weather, weatherIconClass, rate, formattedRate, lastRateUpdateLabel,
