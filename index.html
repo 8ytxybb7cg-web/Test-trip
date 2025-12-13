@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1.0,user-scalable=no" />
-  <title>eMenu Taipei v2.07 — 雲端版</title>
+  <title>eMenu Taipei v2.08 — 雲端版</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -481,6 +481,14 @@
             <div class="bg-white rounded-xl w-full max-w-sm p-5 shadow-2xl">
                  <h3 class="text-xl font-bold mb-4">{{ newItineraryItem.id ? '編輯行程' : '新增行程' }}</h3>
                 <div class="space-y-3 text-sm">
+                    <div class="flex gap-3 mb-1">
+                        <select v-model="newItineraryItem.dayIndex" class="w-full p-2 rounded-lg border bg-white text-base font-medium text-gray-700">
+                             <option v-for="(d, i) in days" :key="i" :value="i">
+                                 12/{{ d.date }} ({{ d.week }}) — {{ d.label }}
+                             </option>
+                        </select>
+                    </div>
+
                     <div class="flex gap-3">
                         <input v-model="newItineraryItem.title" class="flex-1 p-2 rounded-lg border bg-white text-base" placeholder="標題">
                         <input v-model="newItineraryItem.time" type="time" class="w-24 p-2 rounded-lg border bg-white text-base">
@@ -613,7 +621,7 @@
 
     createApp({
       setup() {
-        const appVersion = ref('v251212-2.07');
+        const appVersion = ref('v251213-2.08');
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -759,7 +767,7 @@
 
         // Modals & New Item Data
         const itineraryModalOpen = ref(false);
-        const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', address: '', dayIndex: 0 });
+        const newItineraryItem = reactive({ id: null, title: '', note: '', time: '', address: '', dayIndex: 0, originalDayIndex: null });
         const quickItinerary = reactive({ title: '', time: '' });
 
         const shoppingList = ref(initializeListWithIds([
@@ -822,18 +830,34 @@
 
         // --- ACTIONS ---
 
-        // Itinerary
+        // Itinerary (UPDATED logic for Date Moving)
         function openItineraryModal(item = null) {
-          Object.assign(newItineraryItem, { id: null, title: '', note: '', time: '', address: '', dayIndex: selectedDay.value });
-          if (item) Object.assign(newItineraryItem, deepClone(item));
+          // Reset modal state
+          Object.assign(newItineraryItem, { 
+              id: null, 
+              title: '', 
+              note: '', 
+              time: '', 
+              address: '', 
+              dayIndex: selectedDay.value, // Default to current view
+              originalDayIndex: null 
+          });
+
+          if (item) {
+              Object.assign(newItineraryItem, deepClone(item));
+              // Ensure we know where it came from so we can move it if needed
+              newItineraryItem.dayIndex = selectedDay.value; 
+              newItineraryItem.originalDayIndex = selectedDay.value;
+          }
           itineraryModalOpen.value = true;
         }
         function closeItineraryModal() {
           itineraryModalOpen.value = false;
         }
+        
         function saveItineraryItem() {
           if (!newItineraryItem.title.trim()) return;
-          const dayItems = itinerary[newItineraryItem.dayIndex];
+
           const itemToSave = {
             id: newItineraryItem.id || generateId(),
             title: newItineraryItem.title.trim(),
@@ -841,9 +865,30 @@
             time: newItineraryItem.time.trim(),
             address: newItineraryItem.address.trim(),
           };
-          const index = dayItems.findIndex(i => i.id === itemToSave.id);
-          if (index !== -1) dayItems.splice(index, 1, itemToSave);
-          else dayItems.push(itemToSave);
+
+          const targetDayIdx = newItineraryItem.dayIndex;
+          const originalDayIdx = newItineraryItem.originalDayIndex;
+
+          // Case 1: Editing an existing item
+          if (newItineraryItem.id) {
+              // If day changed: Remove from old, Add to new
+              if (originalDayIdx !== null && originalDayIdx !== targetDayIdx) {
+                   const oldList = itinerary[originalDayIdx];
+                   const oldIndex = oldList.findIndex(i => i.id === itemToSave.id);
+                   if (oldIndex !== -1) oldList.splice(oldIndex, 1);
+                   
+                   itinerary[targetDayIdx].push(itemToSave);
+              } else {
+                  // Same day, just update
+                   const list = itinerary[targetDayIdx];
+                   const index = list.findIndex(i => i.id === itemToSave.id);
+                   if (index !== -1) list.splice(index, 1, itemToSave);
+              }
+          } 
+          // Case 2: Creating a new item
+          else {
+              itinerary[targetDayIdx].push(itemToSave);
+          }
 
           if (selectedMapLocation.value && selectedMapLocation.value.id === itemToSave.id) {
             showLocationOnMap(itemToSave);
@@ -851,6 +896,7 @@
           closeItineraryModal();
           saveAll();
         }
+
         function removeItineraryItem(idToRemove) {
           if (!confirm('確定刪除此行程項目嗎？')) return;
           const dayItems = itinerary[selectedDay.value];
@@ -1088,7 +1134,7 @@
         }
 
         // --- CLOUD SYNC ---
-        const TRIP_ID = 'taipei_trip2025'; // Ensure this matches 2.06.txt
+        const TRIP_ID = 'taipei_trip2025'; // UPDATED from shared_trip
         let isRemoteUpdate = false;
         let debounceTimer = null;
 
@@ -1132,7 +1178,6 @@
             debounceTimer = setTimeout(async () => {
                 const payload = getAppPayload();
                 try {
-                    // Reverted to UPSERT and trip_data as per original 2.06 source to fix sync issues
                     const { error } = await supabaseClient
                         .from('trip_data')
                         .upsert({ id: TRIP_ID, content: payload });
