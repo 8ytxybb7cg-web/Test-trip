@@ -639,10 +639,10 @@
 
         // Date/Day Info
         const days = reactive([
-          { date: '15', week: '一', label: '15/12 抵達 (Day 1)', type: 'flight-out' },
-          { date: '16', week: '二', label: '16/12  (Day 2)', type: 'normal' },
-          { date: '17', week: '三', label: '17/12  (Day 3)', type: 'normal' },
-          { date: '18', week: '四', label: '18/12 回程 (Day 4)', type: 'flight-return' },
+          { date: '15', week: '一', label: '抵達 (Day 1)', type: 'flight-out' },
+          { date: '16', week: '二', label: '(Day 2)', type: 'normal' },
+          { date: '17', week: '三', label: '(Day 3)', type: 'normal' },
+          { date: '18', week: '四', label: '回程 (Day 4)', type: 'flight-return' },
         ]);
         const isFlightDay = computed(() => ['flight-out', 'flight-return'].includes(days[selectedDay.value]?.type));
 
