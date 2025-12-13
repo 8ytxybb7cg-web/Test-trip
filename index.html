@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1.0,user-scalable=no" />
-  <title>eMenu Taipei v2.12 — 雲端版</title>
+  <title>eMenu Taipei v2.13 — 雲端版</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -45,16 +45,26 @@
         padding: 0.75rem; 
         box-shadow: 0 8px 24px rgba(2,6,23,0.06);
     }
-    .expense-card {
-        /* New Custom Background: #081C54 (50%) */
-        background: linear-gradient(135deg, rgba(8, 28, 84, 0.7) 0%, rgba(8, 28, 84, 0.75) 100%);
-        backdrop-filter: blur(8px);
-        color: white;
-        border-radius: 24px;
-        padding: 1.25rem;
-        box-shadow: 0 10px 30px -10px rgba(8, 28, 84, 0.4);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
+    . .expense-card {
+  background: linear-gradient(
+    135deg,
+    rgba(8, 28, 84, 0.48) 0%,
+    rgba(8, 28, 84, 0.55) 100%
+  );
+
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+
+  color: white;
+  border-radius: 24px;
+  padding: 1.25rem;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
     
     @media screen and (max-width: 768px) {
         input, select, textarea { font-size: 16px !important; }
@@ -606,7 +616,7 @@
 
                     <div class="mt-1">
                         <label class="block text-xs font-bold text-gray-500 mb-1">日期</label>
-                        <input v-model="newExpense.date" type="date" class="w-full p-2 rounded-lg border bg-white/70 text-base">
+                        <input v-model="newExpense.date" type="date" class="w-full p-2 rounded-lg border bg-white text-base">
                     </div>
                 </div>
                 <div class="mt-5 flex justify-end gap-3">
@@ -701,7 +711,7 @@
 
     createApp({
       setup() {
-        const appVersion = ref('v251213-2.12'); // **UPDATED VERSION**
+        const appVersion = ref('v251213-2.13'); // **UPDATED VERSION**
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -717,12 +727,12 @@
           }
         });
 
-        // Date/Day Info
+        // Date/Day Info - Updated to English Week Days
         const days = reactive([
-          { date: '15', week: '一', label: '抵達 (Day 1)', type: 'flight-out' },
-          { date: '16', week: '二', label: 'Day 2', type: 'normal' },
-          { date: '17', week: '三', label: 'Day 3', type: 'normal' },
-          { date: '18', week: '四', label: '回程 (Day 4)', type: 'flight-return' },
+          { date: '15', week: 'Mon', label: '抵達 (Day 1)', type: 'flight-out' },
+          { date: '16', week: 'Tue', label: 'Day 2', type: 'normal' },
+          { date: '17', week: 'Wed', label: 'Day 3', type: 'normal' },
+          { date: '18', week: 'Thu', label: '回程 (Day 4)', type: 'flight-return' },
         ]);
         const isFlightDay = computed(() => ['flight-out', 'flight-return'].includes(days[selectedDay.value]?.type));
 
@@ -902,10 +912,28 @@
           };
         });
 
+        // Updated Filtered Expenses with Date Sorting (Newest First)
         const filteredExpenses = computed(() => {
-            if (expenseFilter.value === 'all') return expenses.value;
-            if (expenseFilter.value === 'credit') return expenses.value.filter(e => e.paymentMethod === 'credit_card');
-            return expenses.value.filter(e => e.paymentMethod !== 'credit_card'); // Default to cash
+            let list = [];
+            if (expenseFilter.value === 'all') list = expenses.value;
+            else if (expenseFilter.value === 'credit') list = expenses.value.filter(e => e.paymentMethod === 'credit_card');
+            else list = expenses.value.filter(e => e.paymentMethod !== 'credit_card');
+
+            // Sort: Date Descending (MM/DD) -> ID Descending
+            return [...list].sort((a, b) => {
+                const dateA = a.date || '0/0';
+                const dateB = b.date || '0/0';
+                
+                // Parse "MM/DD" into comparable integer MMDD
+                const [mA, dA] = dateA.split('/').map(Number);
+                const [mB, dB] = dateB.split('/').map(Number);
+                
+                const valA = (mA || 0) * 100 + (dA || 0);
+                const valB = (mB || 0) * 100 + (dB || 0);
+
+                if (valA !== valB) return valB - valA; // Descending Date
+                return b.id - a.id; // Newest Created First
+            });
         });
         
         // Weather & Rate
@@ -1190,7 +1218,7 @@
         }
 
 
-        // Expenses (Updated with Format + Date Logic)
+        // Expenses
         function openExpenseModal(item = null) {
             if(item) {
                 // EDIT MODE
