@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v3.12</title>
+  <title>Travel Sync v3.13</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -265,6 +265,18 @@
 
     .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
     .fade-enter-from, .fade-leave-to { opacity: 0; }
+    
+    /* Weather Mini Grid Items */
+    .weather-stat-item {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 8px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
 
   </style>
 </head>
@@ -312,7 +324,7 @@
              {{ formattedRate }}
            </div>
            <div class="text-[9px] font-medium text-gray-400/80 mt-1 font-mono tracking-tight">
-             更新：{{ lastRateUpdateLabel }}
+              更新：{{ lastRateUpdateLabel }}
            </div>
         </div>
       </div>
@@ -346,30 +358,54 @@
                     <i class="ph ph-map-pin-simple-area text-xs"></i>
                     <span class="text-[11px] font-bold uppercase tracking-wider">台北市</span>
                   </div>
+            
                   <div class="text-[52px] leading-none font-light tracking-tighter text-black flex items-start">
                     {{ weather.temp }}<span class="text-3xl mt-1 font-normal">°</span>
                   </div>
               </div>
               <div class="text-right pt-1">
-                  <i :class="weatherIconClass" class="text-[3.5rem] text-gray-800/80 drop-shadow-sm"></i>
+                 <i :class="weatherIconClass" class="text-[3.5rem] text-gray-800/80 drop-shadow-sm"></i>
               </div>
           </div>
           
-          <div class="mt-4 flex items-center justify-between border-t border-gray-400/20 pt-3">
-             <div class="flex items-center gap-2">
-                 <span class="text-sm font-semibold text-gray-700">{{ weather.desc }}</span>
-                 
-                 <div class="flex items-center gap-1 text-xs font-bold text-[#007AFF] bg-blue-50/80 px-2 py-0.5 rounded-full">
-                    <i class="ph ph-drop-fill"></i> {{ weather.rain }}%
+          <div class="mt-4 flex flex-col gap-3 border-t border-gray-400/20 pt-3">
+             <div class="flex items-center justify-between">
+                 <div class="flex items-center gap-2">
+                     <span class="text-sm font-semibold text-gray-700">{{ weather.desc }}</span>
+                     
+                     <div v-if="weather.warning" class="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 animate-pulse">
+                        <i class="ph ph-warning-fill"></i> {{ weather.warning }}
+                     </div>
                  </div>
-                 
-                 <div v-if="weather.warning" class="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 animate-pulse">
-                    <i class="ph ph-warning-fill"></i> {{ weather.warning }}
+                 <div class="flex gap-3 text-sm font-medium">
+                     <span class="text-gray-800">H:{{ weather.max }}°</span>
+                     <span class="text-gray-500">L:{{ weather.min }}°</span>
                  </div>
              </div>
-             <div class="flex gap-3 text-sm font-medium">
-                 <span class="text-gray-800">H:{{ weather.max }}°</span>
-                 <span class="text-gray-500">L:{{ weather.min }}°</span>
+
+             <div class="flex items-center">
+                 <div class="flex items-center gap-1.5 text-[11px] font-bold text-[#007AFF] bg-blue-50/80 px-2.5 py-1 rounded-full border border-blue-100/50">
+                    <i class="ph ph-drop-fill text-xs"></i> 降雨機率：{{ weather.rain }}%
+                 </div>
+             </div>
+             
+             <div class="grid grid-cols-4 gap-2 mt-1">
+                <div class="weather-stat-item">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">體感</span>
+                    <span class="text-xs font-bold text-gray-800">{{ weather.feelsLike }}°</span>
+                </div>
+                <div class="weather-stat-item">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">濕度</span>
+                    <span class="text-xs font-bold text-gray-800">{{ weather.humidity }}<span class="text-[9px]">%</span></span>
+                </div>
+                <div class="weather-stat-item">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">風速</span>
+                    <span class="text-xs font-bold text-gray-800">{{ weather.wind }}<span class="text-[9px] scale-75 inline-block">km/h</span></span>
+                </div>
+                <div class="weather-stat-item">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">UV</span>
+                    <span class="text-xs font-bold text-gray-800">{{ weather.uv }}</span>
+                </div>
              </div>
           </div>
         </div>
@@ -392,7 +428,7 @@
                    <div class="text-[10px] opacity-60 mt-1 font-medium">抵達 {{ activeFlight.arrTime }}</div>
                 </div>
               </div>
-              
+          
               <div class="flex items-center justify-between relative z-10">
                 <div class="text-center min-w-[60px]">
                    <div class="text-3xl font-bold tracking-wider">{{ activeFlight.fromCode }}</div>
@@ -420,7 +456,7 @@
 
         <transition name="fade">
             <div v-if="selectedMapLocation" class="ios-card bg-white/90 p-4 border-2 border-[#007AFF]/10 relative">
-               <button @click="selectedMapLocation = null" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full bg-gray-100 transition">
+                <button @click="selectedMapLocation = null" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full bg-gray-100 transition">
                     <i class="ph ph-x text-base"></i>
                 </button>
                 <div class="mb-4 pr-8">
@@ -440,7 +476,7 @@
                     <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank"
                        class="flex-1 h-10 flex items-center justify-center gap-2 bg-[#007AFF] text-white rounded-xl font-bold active:scale-95 transition text-sm shadow-sm shadow-blue-200">
                        <i class="ph ph-navigation-arrow text-lg"></i> 導航
-                   </a>
+                    </a>
                 </div>
             </div>
         </transition>
@@ -472,7 +508,7 @@
                    <div class="relative cursor-pointer" @click="togglePreNoteDone(note.id)">
                       <i class="ph text-2xl transition-colors" :class="note.isDone ? 'ph-check-circle-fill text-[#007AFF]' : 'ph-circle text-gray-300 hover:text-gray-400'"></i>
                   </div>
-                   <span class="font-medium text-[16px] truncate" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
+                    <span class="font-medium text-[16px] truncate" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
                 </div>
                 <div class="action-btn-group">
                    <button @click.stop="editPreNote(note)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
@@ -483,7 +519,7 @@
             
             <div v-if="preTripNotes.length === 0" class="py-12 text-center">
                 <i class="ph ph-clipboard-text text-4xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400">尚未建立準備清單</p>
+                 <p class="text-sm text-gray-400">尚未建立準備清單</p>
             </div>
             
             <div class="mt-6">
@@ -501,7 +537,7 @@
                <div v-for="(it, idx) in sortedItinerary" :key="it.id" 
                   @click="showLocationOnMap(it)"
                   class="relative group cursor-pointer">
-                 
+               
                 <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-white border-[3px] border-gray-300 group-hover:border-[#007AFF] transition-colors z-10 shadow-sm"></div>
                 
                 <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-4 border border-white/60 shadow-sm transition-all active:scale-[0.99] active:bg-white/90">
@@ -519,7 +555,7 @@
                              <button @click.stop="removeItineraryItem(it.id)" class="icon-btn delete"><i class="ph ph-trash text-lg"></i></button>
                         </div>
                     </div>
-                     
+              
                     <div v-if="(it.address || '').trim() !== ''" class="mt-2.5 flex items-center gap-1.5 text-xs text-gray-400 group-hover:text-[#007AFF] transition-colors">
                         <i class="ph ph-map-pin-line"></i>
                         <span class="font-medium">查看地圖</span>
@@ -530,7 +566,7 @@
 
             <p v-if="sortedItinerary.length === 0" class="py-12 text-center text-gray-400 text-sm">
                 <i class="ph ph-coffee text-3xl mb-2 block text-gray-300"></i>
-                 今日無行程，享受自由時光
+                今日無行程，享受自由時光
             </p>
             
             <div class="mt-8 ios-card !bg-white/60 p-3"> 
@@ -553,10 +589,10 @@
                   <div class="flex-1 min-w-0 pt-0.5">
                     <div class="font-bold text-[16px] text-gray-900 truncate" :class="{'task-done': item.isDone}">{{ item.name }}</div>
                      <div v-if="item.imageURL" class="mt-3">
-                       <a v-if="isInstagramLink(item.imageURL)" :href="item.imageURL" target="_blank" 
+                        <a v-if="isInstagramLink(item.imageURL)" :href="item.imageURL" target="_blank" 
                            class="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-gray-200 transition">
                            <i class="ph ph-instagram-logo text-lg"></i> Post
-                       </a>
+                        </a>
                         <div v-else class="relative group/img cursor-pointer w-20 h-20 overflow-hidden rounded-lg border border-gray-200 shadow-sm" @click="openImageViewer(item.imageURL)">
                              <img :src="item.imageURL" class="w-full h-full object-cover" alt="Thumbnail">
                         </div>
@@ -587,7 +623,7 @@
                  
                 <div class="relative z-10">
                     <div class="text-white/60 text-[11px] font-bold tracking-widest uppercase mb-1">總支出 (HKD)</div>
-                    <div class="text-5xl font-light tracking-tight mb-2 text-white flex items-baseline">
+                   <div class="text-5xl font-light tracking-tight mb-2 text-white flex items-baseline">
                         <span class="text-2xl opacity-60 mr-1">$</span>{{ formatNumber(totalExpense.hkd, 0) }}
                     </div>
                     <div class="text-white/40 text-sm font-medium">≈ TWD {{ formatNumber(totalExpense.twd, 0) }}</div>
@@ -605,7 +641,7 @@
                  </div>
              </div>
 
-            <div class="bg-gray-200/50 p-1 rounded-xl flex mb-6 mx-1 backdrop-blur-sm">
+             <div class="bg-gray-200/50 p-1 rounded-xl flex mb-6 mx-1 backdrop-blur-sm">
                  <button v-for="f in ['all', 'credit', 'cash']" :key="f"
                 @click="expenseFilter = f"
                     class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200"
@@ -622,13 +658,14 @@
                         </div>
                         <div>
                             <div class="font-bold text-gray-900 text-[15px]">{{ e.name }}</div>
-                             <div class="text-[11px] font-medium text-gray-400 mt-0.5">{{ e.category }} · {{ e.date }}</div>
+                            <div class="text-[11px] font-medium text-gray-400 mt-0.5">{{ e.category }} · {{ e.date }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
-                         <div class="text-right">
+                        <div class="text-right">
                            <div class="font-bold text-gray-900 text-[16px]">{{ e.currency }} <span class="text-base">{{ formatNumber(e.amount, 0) }}</span></div>
                         </div>
+                        
                         <div class="action-btn-group">
                              <button @click="openExpenseModal(e)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
                              <button @click="removeExpense(e.id)" class="icon-btn delete"><i class="ph ph-trash text-lg"></i></button>
@@ -645,7 +682,7 @@
               <li v-for="(it, idx) in infoList" :key="it.id" class="ios-list-item !items-start !p-5">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                   <div class="mt-1 cursor-pointer" @click="it.isDone = !it.isDone">
-                     <i class="ph text-2xl" :class="it.isDone ? 'ph-check-circle-fill text-green-500' : 'ph-info text-[#007AFF]'"></i>
+                      <i class="ph text-2xl" :class="it.isDone ? 'ph-check-circle-fill text-green-500' : 'ph-info text-[#007AFF]'"></i>
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="font-bold text-[17px] text-gray-900 truncate">{{ it.title }}</div>
@@ -673,7 +710,7 @@
           <div class="text-[10px] font-bold uppercase tracking-widest">Travel Sync System</div>
           <div class="text-[9px] font-mono mt-0.5">Build {{ appVersion }}</div>
       </div>
-    </main>
+   </main>
 
     <nav class="fixed bottom-6 left-0 right-0 z-30 px-4 pointer-events-none">
       <div class="iphone-dock w-full max-w-[360px] mx-auto pointer-events-auto transition-transform hover:scale-[1.01] duration-300">
@@ -723,7 +760,7 @@
               <input type="checkbox" id="pre-note-done" v-model="editingPreNote.isDone" class="w-6 h-6 text-[#007AFF] rounded focus:ring-[#007AFF]">
               <label for="pre-note-done" class="text-gray-900 font-medium select-none flex-1">標記為已完成</label>
             </div>
-          </div>
+         </div>
           <div class="ios-modal-footer">
             <button @click="closePreNoteModal" class="btn-ios-cancel">取消</button>
             <button @click="savePreNoteEdit" class="btn-ios-primary">儲存</button>
@@ -755,7 +792,7 @@
                             <input v-model="newFlight.fromCode" class="ios-input text-center uppercase" placeholder="HKG">
                         </div>
                         <div class="flex-1">
-                             <label class="text-xs text-gray-400 ml-1 font-bold">目的地</label>
+                              <label class="text-xs text-gray-400 ml-1 font-bold">目的地</label>
                             <input v-model="newFlight.toCode" class="ios-input text-center uppercase" placeholder="TPE">
                         </div>
                     </div>
@@ -770,7 +807,7 @@
                         </div>
                     </div>
                      <textarea v-model="newFlight.note" class="ios-input" rows="2" placeholder="備註 (航廈、座位等)"></textarea>
-                </div>
+                 </div>
                 <div class="ios-modal-footer">
                      <button @click="closeFlightModal" class="btn-ios-cancel">取消</button>
                     <button @click="saveFlight" class="btn-ios-primary">儲存</button>
@@ -829,11 +866,11 @@
                             </div>
                             <input type="file" accept="image/*" class="hidden" @change="(e) => handleFileUpload(e, 'shopping')">
                         </label>
-             
+           
                         <input v-model="newShoppingItem.imageURL" class="w-full mt-3 p-2 text-xs text-gray-400 bg-transparent text-center border-none focus:outline-none" placeholder="或是貼上圖片網址">
                          
                          <div v-if="tempUploadPreview.shopping || newShoppingItem.imageURL" class="mt-4 flex justify-center">
-                             <img :src="tempUploadPreview.shopping || newShoppingItem.imageURL" class="h-24 w-24 object-cover rounded-2xl shadow-sm border border-gray-100">
+                              <img :src="tempUploadPreview.shopping || newShoppingItem.imageURL" class="h-24 w-24 object-cover rounded-2xl shadow-sm border border-gray-100">
                          </div>
                     </div>
 
@@ -914,7 +951,7 @@
                     <input v-model="newInfoItem.title" class="ios-input font-medium" placeholder="標題">
                     <textarea v-model="newInfoItem.note" class="ios-input" rows="4" placeholder="詳細內容..."></textarea>
                     
-                    <div class="border-t border-gray-100 pt-4">
+                     <div class="border-t border-gray-100 pt-4">
                         <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">附件</label>
                          <label class="flex flex-col items-center justify-center w-full p-4 border border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition">
                             <div class="text-center" v-if="!tempUploadPreview.info && !newInfoItem.imageURL">
@@ -926,7 +963,7 @@
                             </div>
                             <input type="file" accept="image/*" class="hidden" @change="(e) => handleFileUpload(e, 'info')">
                         </label>
-             
+            
                         <input v-model="newInfoItem.imageURL" class="w-full mt-2 p-2 bg-transparent text-xs text-gray-400 text-center border-none focus:outline-none" placeholder="或在此貼上網址">
 
                         <div v-if="tempUploadPreview.info || newInfoItem.imageURL" class="mt-3 flex justify-center">
@@ -948,14 +985,12 @@
 
   <script>
     const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
-
     // --- Constants & Config ---
     const SUPABASE_URL = 'https://myrhatzdypiwwgmmfbuw.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuYQVvKi';
     const TRIP_ID = 'taipei_trip2025';
     const DEFAULT_RATE = 0.25;
     const CURRENCY_RATES = { 'HKD': 1, 'JPY': 0.052, 'USD': 7.8 };
-
     // --- Utilities ---
     const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
     const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
@@ -967,10 +1002,9 @@
     }
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     createApp({
       setup() {
-        const appVersion = ref('v251214-3.12'); // Version Updated
+        const appVersion = ref('v3.13 (Build 251214)'); // Version Updated
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -996,7 +1030,6 @@
           const list = itinerary[selectedDay.value] || [];
           return [...list].sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
         });
-
         const selectedMapLocation = ref(null);
         function showLocationOnMap(item) {
           selectedMapLocation.value = (item.address && item.address.trim() !== '') ? { title: item.title, address: item.address, id: item.id } : null;
@@ -1020,9 +1053,7 @@
           const type = days[selectedDay.value]?.type;
           return (type === 'flight-out') ? flights.value.find(f => f.type === 'outbound') : (type === 'flight-return' ? flights.value.find(f => f.type === 'return') : null);
         });
-
         const shouldShowFlightCard = computed(() => activeFlight.value !== null && currentTab.value === '行程');
-
         // --- File Upload ---
         const isUploading = ref(false);
         const uploadStatus = reactive({ shopping: '', info: '' });
@@ -1057,7 +1088,8 @@
         function openImageViewer(url) {
             if (!url) return;
             if (isInstagramLink(url)) window.open(url, '_blank');
-            else { imageViewer.url = url; imageViewer.open = true; }
+            else { imageViewer.url = url; imageViewer.open = true;
+            }
         }
 
         // --- Modals State ---
@@ -1080,13 +1112,13 @@
         const editingPreNote = reactive({});
         const flightModalOpen = ref(false);
         const newFlight = reactive({});
-
         // --- Logic ---
         const totalExpense = computed(() => {
           const rateVal = 1 / (Number(rate.value) || 4); // Convert back for logic
           let total = 0, credit = 0, cash = 0;
           expenses.value.forEach(e => {
              let amount = Number(e.amount) || 0;
+             
              if (e.currency === 'TWD') amount *= rateVal;
              else if (CURRENCY_RATES[e.currency]) amount *= CURRENCY_RATES[e.currency];
              
@@ -1095,16 +1127,14 @@
           });
           return { hkd: total, twd: total / rateVal, creditHkd: credit, creditTwd: credit / rateVal, cashHkd: cash, cashTwd: cash / rateVal };
         });
-
         const filteredExpenses = computed(() => {
             let list = expenses.value;
             if (expenseFilter.value === 'credit') list = list.filter(e => e.paymentMethod === 'credit_card');
             else if (expenseFilter.value === 'cash') list = list.filter(e => e.paymentMethod !== 'credit_card');
             return [...list].sort((a, b) => b.id - a.id);
         });
-
         // --- Weather & Rate ---
-        const weather = reactive({ temp:'--', desc:'載入中', rain: 0, code:0, min:'--', max:'--', warning: null });
+        const weather = reactive({ temp:'--', desc:'載入中', rain: 0, code:0, min:'--', max:'--', warning: null, feelsLike:'--', humidity:'--', wind:'--', uv:'--' });
         const weatherIconClass = computed(() => {
             const c = weather.code;
             if (c >= 95) return 'ph ph-cloud-lightning-rain';
@@ -1112,16 +1142,15 @@
             if (c > 2) return 'ph ph-cloud';
             return 'ph ph-sun';
         });
-
         const rate = ref(null);
         const formattedRate = computed(() => rate.value || '...');
         const lastRateUpdate = ref(null);
+        
+        // Updated Date Logic
         const lastRateUpdateLabel = computed(() => {
             if(!lastRateUpdate.value) return '--:--';
             const d = lastRateUpdate.value;
-            const h = d.getHours().toString().padStart(2, '0');
-            const m = d.getMinutes().toString().padStart(2, '0');
-            return `${h}:${m}`;
+            return d.toLocaleTimeString('zh-TW', { hour12: true, hour: '2-digit', minute:'2-digit', second:'2-digit' });
         });
 
         function selectDay(i){ selectedDay.value = i; selectedMapLocation.value = null; }
@@ -1136,7 +1165,8 @@
             if(item) newItineraryItem.originalDayIndex = targetDayIndex;
             itineraryModalOpen.value = true;
         }
-        function closeItineraryModal() { itineraryModalOpen.value = false; }
+        function closeItineraryModal() { itineraryModalOpen.value = false;
+        }
         function saveItineraryItem() {
             if (!newItineraryItem.title.trim()) return;
             const item = { ...newItineraryItem, id: newItineraryItem.id || generateId() };
@@ -1188,8 +1218,10 @@
              modalRef.value = true;
         }
 
-        function openShoppingModal(item) { openGenericModal(shoppingModalOpen, newShoppingItem, { id: null, name: '', imageURL: '', isDone: false }, item); }
-        function closeShoppingModal() { shoppingModalOpen.value = false; }
+        function openShoppingModal(item) { openGenericModal(shoppingModalOpen, newShoppingItem, { id: null, name: '', imageURL: '', isDone: false }, item);
+        }
+        function closeShoppingModal() { shoppingModalOpen.value = false;
+        }
         async function saveShoppingItem() {
             if(!newShoppingItem.name) return;
             if(pendingUploadFiles.shopping) {
@@ -1201,10 +1233,13 @@
             }
             saveToList(shoppingList, newShoppingItem); closeShoppingModal();
         }
-        function removeShoppingItem(id) { removeFromList(shoppingList, id); }
+        function removeShoppingItem(id) { removeFromList(shoppingList, id);
+        }
 
-        function openInfoModal(item) { openGenericModal(infoModalOpen, newInfoItem, { id: null, title: '', note: '', isDone: false, imageURL: '' }, item); }
-        function closeInfoModal() { infoModalOpen.value = false; }
+        function openInfoModal(item) { openGenericModal(infoModalOpen, newInfoItem, { id: null, title: '', note: '', isDone: false, imageURL: '' }, item);
+        }
+        function closeInfoModal() { infoModalOpen.value = false;
+        }
         async function saveInfoItem() {
              if(!newInfoItem.title) return;
              if(pendingUploadFiles.info) {
@@ -1216,20 +1251,28 @@
              }
              saveToList(infoList, newInfoItem); closeInfoModal();
         }
-        function removeInfo(id) { removeFromList(infoList, id); }
+        function removeInfo(id) { removeFromList(infoList, id);
+        }
 
-        function addPreNote() { if(newPreNote.value.trim()) { preTripNotes.value.push({id: generateId(), name: newPreNote.value, isDone: false}); newPreNote.value=''; saveAll(); } }
-        function removePreNote(id) { removeFromList(preTripNotes, id); }
-        function togglePreNoteDone(id) { const n = preTripNotes.value.find(x=>x.id===id); if(n) {n.isDone=!n.isDone; saveAll();} }
-        function editPreNote(n) { openGenericModal(preNoteModalOpen, editingPreNote, {}, n); }
-        function closePreNoteModal() { preNoteModalOpen.value = false; }
-        function savePreNoteEdit() { saveToList(preTripNotes, editingPreNote); closePreNoteModal(); }
+        function addPreNote() { if(newPreNote.value.trim()) { preTripNotes.value.push({id: generateId(), name: newPreNote.value, isDone: false}); newPreNote.value='';
+            saveAll(); } }
+        function removePreNote(id) { removeFromList(preTripNotes, id);
+        }
+        function togglePreNoteDone(id) { const n = preTripNotes.value.find(x=>x.id===id); if(n) {n.isDone=!n.isDone;
+            saveAll();} }
+        function editPreNote(n) { openGenericModal(preNoteModalOpen, editingPreNote, {}, n);
+        }
+        function closePreNoteModal() { preNoteModalOpen.value = false;
+        }
+        function savePreNoteEdit() { saveToList(preTripNotes, editingPreNote); closePreNoteModal();
+        }
 
         function openExpenseModal(item) {
             const def = { id: null, name:'', amount:null, currency:'TWD', category:'餐飲', paymentMethod:'cash', date: new Date().toISOString().split('T')[0] };
             openGenericModal(expenseModalOpen, newExpense, def, item);
         }
-        function closeExpenseModal() { expenseModalOpen.value = false; }
+        function closeExpenseModal() { expenseModalOpen.value = false;
+        }
         function saveExpense() {
             if(!newExpense.name || !newExpense.amount) return;
             const item = { ...newExpense, id: newExpense.id || generateId() };
@@ -1241,13 +1284,15 @@
             }
             closeExpenseModal(); saveAll();
         }
-        function removeExpense(id) { removeFromList(expenses, id); }
+        function removeExpense(id) { removeFromList(expenses, id);
+        }
 
         function openFlightModal(id) {
              const def = { id: null, type: 'outbound', date: '2025-12-15', code: '', depTime:'', arrTime:'', fromCode:'HKG', toCode:'TPE' };
              if(id === 'new') {
                  def.type = days[selectedDay.value]?.type === 'flight-return' ? 'return' : 'outbound';
-                 if(def.type === 'return') { def.fromCode='TPE'; def.toCode='HKG'; def.date='2025-12-18'; }
+                 if(def.type === 'return') { def.fromCode='TPE'; def.toCode='HKG'; def.date='2025-12-18';
+                 }
                  Object.assign(newFlight, def);
              } else {
                  const f = flights.value.find(x => x.id === id) || flights.value.find(x => x.type === id);
@@ -1255,7 +1300,8 @@
              }
              flightModalOpen.value = true;
         }
-        function closeFlightModal() { flightModalOpen.value = false; }
+        function closeFlightModal() { flightModalOpen.value = false;
+        }
         function saveFlight() {
             const item = { ...newFlight, id: newFlight.id || newFlight.type };
             const idx = flights.value.findIndex(f => f.id === item.id);
@@ -1318,6 +1364,7 @@
                 try {
                     const { error } = await supabaseClient.from('trip_data').upsert({ id: TRIP_ID, content: getPayload() });
                     if(error) throw error;
+                    
                     syncState.value = 'synced';
                 } catch(e) { console.error(e); syncState.value = 'error'; }
             }, 1500);
@@ -1333,13 +1380,12 @@
                 syncState.value = 'synced';
             } catch(e) { if(!auto) syncState.value = 'error'; }
         }
-        async function forceReloadCloud() { await fetchCloud(false); }
+        async function forceReloadCloud() { await fetchCloud(false);
+        }
 
         async function fetchRate() {
             try {
                 // Source: open.er-api.com
-                // Logic: API returns 1 TWD = 0.24 HKD.
-                // Display: 1 HKD = (1/0.24) = 4.15 TWD
                 const res = await fetch('https://open.er-api.com/v6/latest/TWD');
                 const d = await res.json();
                 if(d?.rates?.HKD) {
@@ -1352,8 +1398,8 @@
         async function fetchWeather() {
              try {
                 // Source: Open-Meteo
-                // Fetches current weather + daily min/max + hourly rain
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0330&longitude=121.5654&current_weather=true&hourly=precipitation_probability&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei');
+                // Enhanced params for additional data:
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0330&longitude=121.5654&current_weather=true&hourly=precipitation_probability,relativehumidity_2m,apparent_temperature,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei');
                 const d = await res.json();
                 if(d.current_weather) {
                     weather.temp = Math.round(d.current_weather.temperature);
@@ -1362,7 +1408,6 @@
                     const c = weather.code;
                     // Reset Warning
                     weather.warning = null;
-
                     if(c >= 95) { weather.desc = '雷陣雨'; weather.warning = '雷雨特報'; }
                     else if(c >= 80) weather.desc = '陣雨';
                     else if(c >= 60) { weather.desc = '雨天'; if(c >= 63) weather.warning = '大雨特報'; }
@@ -1372,14 +1417,20 @@
                     else if(c >= 20) weather.desc = '局部多雲';
                     else if(c >= 10) weather.desc = '晴時多雲';
                     else weather.desc = '晴天';
-                    
-                    // RAIN LOGIC (Enhanced)
-                    // We get the current hour index from the client time, assuming user is checking 'current' weather
-                    // Open-Meteo hourly array starts at 00:00 today.
+
                     const currentHour = new Date().getHours();
+                    
+                    // Rain Probability
                     if(d.hourly && d.hourly.precipitation_probability) {
-                         // Default to 0 if data is missing for that hour
                          weather.rain = d.hourly.precipitation_probability[currentHour] || 0;
+                    }
+                    
+                    // Additional Metrics
+                    if(d.hourly) {
+                        weather.feelsLike = d.hourly.apparent_temperature ? Math.round(d.hourly.apparent_temperature[currentHour]) : '--';
+                        weather.humidity = d.hourly.relativehumidity_2m ? d.hourly.relativehumidity_2m[currentHour] : '--';
+                        weather.wind = d.hourly.windspeed_10m ? Math.round(d.hourly.windspeed_10m[currentHour]) : '--';
+                        weather.uv = d.hourly.uv_index ? d.hourly.uv_index[currentHour] : '--';
                     }
 
                     if(d.daily) {
@@ -1389,7 +1440,7 @@
                 }
              } catch(e) {
                  console.error("Weather fetch failed", e);
-             }
+            }
         }
 
         onMounted(() => {
@@ -1405,7 +1456,6 @@
             }
         });
         watch([itinerary, preTripNotes, shoppingList, expenses, infoList, flights], () => saveAll(), { deep: true });
-        
         return {
            appVersion, syncState, syncStatusText, forceReloadCloud,
            currentTab, days, selectDay, selectedDay, isFlightDay,
