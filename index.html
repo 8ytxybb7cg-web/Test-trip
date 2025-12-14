@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v3.16</title>
+  <title>Travel Sync v3.17</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -77,11 +77,11 @@
 
     /* iOS Premium Dark Glass Card (Flight/Expense) */
     .ios-card-dark-glass {
-      background: rgba(22, 22, 24, 0.85); /* Slightly darker for better contrast */
+      background: rgba(28, 28, 32, 0.85);
       backdrop-filter: blur(50px);
       -webkit-backdrop-filter: blur(50px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 26px; /* iOS 26 rounded corners */
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 26px;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
       color: white;
       position: relative;
@@ -423,17 +423,12 @@
                   <div class="flex justify-between items-center mt-3">
                       <div class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide border backdrop-blur-md"
                            :class="getStatusClass(activeFlight.status)">
-                          {{ activeFlight.status || 'Scheduled' }}
+                          {{ getStatusLabel(activeFlight.status) }}
                       </div>
-                      <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold text-white transition-all active:scale-95">
-                          <i class="ph ph-broadcast text-[#34C759] animate-pulse"></i>
-                          Flighty 實況
-                          <i class="ph ph-arrow-square-out text-xs opacity-70"></i>
-                      </a>
                   </div>
               </div>
 
-              <div class="px-5 pt-1 pb-6 relative z-10">
+              <div class="px-5 pt-1 pb-2 relative z-10">
                   <div class="flex items-center justify-between mt-4">
                     <div class="text-center min-w-[60px]">
                        <div class="text-3xl font-bold tracking-wider text-white">{{ activeFlight.fromCode }}</div>
@@ -456,14 +451,14 @@
                     </div>
                   </div>
                   
-                  <div class="flex justify-between items-end mt-6 pt-4 border-t border-white/10">
+                  <div class="flex justify-between items-end mt-6">
                       <div>
                           <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5">預計起飛</div>
                           <div class="text-2xl font-mono font-bold leading-none">{{ activeFlight.depTime }}</div>
                       </div>
                       
                       <div class="flex flex-col items-center bg-white/10 px-4 py-2 rounded-xl border border-white/10">
-                          <div class="text-[9px] opacity-50 uppercase tracking-widest mb-0.5">登機門</div>
+                          <div class="text-[9px] opacity-50 uppercase tracking-widest mb-0.5">登機閘口</div>
                           <div class="text-xl font-bold text-[#FFCC00]">{{ activeFlight.gate || '--' }}</div>
                       </div>
 
@@ -471,6 +466,21 @@
                           <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5">預計抵達</div>
                           <div class="text-2xl font-mono font-bold leading-none">{{ activeFlight.arrTime }}</div>
                       </div>
+                  </div>
+              </div>
+
+              <div class="p-3 mt-2 border-t border-white/10 relative z-10">
+                  <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" 
+                     class="w-full flex items-center justify-center gap-2 bg-[#34C759]/20 hover:bg-[#34C759]/30 border border-[#34C759]/30 text-[#34C759] h-12 rounded-xl font-bold text-sm transition-all active:scale-[0.98]">
+                      <div class="relative w-2.5 h-2.5">
+                          <div class="absolute inset-0 bg-[#34C759] rounded-full animate-ping opacity-75"></div>
+                          <div class="relative w-2.5 h-2.5 bg-[#34C759] rounded-full"></div>
+                      </div>
+                      查看 Flighty 實時動態
+                      <i class="ph ph-arrow-square-out text-base"></i>
+                  </a>
+                  <div v-else class="text-center text-[10px] text-white/30 py-2">
+                      暫無實時連結
                   </div>
               </div>
             </div>
@@ -807,10 +817,12 @@
                     <div>
                         <label class="text-xs text-gray-400 ml-1 font-bold">狀態 (顯示於卡片)</label>
                         <select v-model="newFlight.status" class="ios-input appearance-none">
+                            <option value="Scheduled">Scheduled (計劃中)</option>
                             <option value="On Time">On Time (準時)</option>
                             <option value="Boarding">Boarding (登機中)</option>
                             <option value="Delayed">Delayed (延誤)</option>
                             <option value="Landed">Landed (已抵達)</option>
+                            <option value="Cancelled">Cancelled (已取消)</option>
                         </select>
                     </div>
                     <div class="flex gap-3">
@@ -1035,7 +1047,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251214-3.16'); // Version Updated
+        const appVersion = ref('v251214-3.17'); // Version Updated
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -1127,6 +1139,18 @@
             if (status === 'Delayed') return 'status-delayed';
             if (status === 'Boarding') return 'status-boarding';
             return 'bg-white/10 border-white/20 text-white';
+        }
+        
+        function getStatusLabel(status) {
+            const map = {
+                'Scheduled': '計劃中',
+                'On Time': '準時',
+                'Boarding': '登機中',
+                'Delayed': '延誤',
+                'Landed': '已抵達',
+                'Cancelled': '已取消'
+            };
+            return map[status] || status;
         }
 
         // --- File Upload ---
@@ -1512,7 +1536,7 @@
            appVersion, syncState, syncStatusText, forceReloadCloud,
            currentTab, days, selectDay, selectedDay, isFlightDay,
            weather, weatherIconClass, formattedRate, lastRateUpdateLabel,
-           activeFlight, shouldShowFlightCard, getStatusClass,
+           activeFlight, shouldShowFlightCard, getStatusClass, getStatusLabel,
            selectedMapLocation, showLocationOnMap, generateMapLink,
            preTripNotes, newPreNote, addPreNote, removePreNote, editPreNote, togglePreNoteDone, preNoteModalOpen, editingPreNote, closePreNoteModal, savePreNoteEdit,
            sortedItinerary, openItineraryModal, closeItineraryModal, saveItineraryItem, removeItineraryItem, itineraryModalOpen, newItineraryItem, quickItinerary, addQuickItinerary,
