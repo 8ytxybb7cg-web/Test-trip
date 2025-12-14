@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v3.17</title>
+  <title>Travel Sync v3.18</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -1047,7 +1047,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251214-3.17'); // Version Updated
+        const appVersion = ref('v251214-3.18'); // Version Updated
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
@@ -1105,9 +1105,9 @@
              title: 'Cathay Pacific', 
              note: 'Economy', 
              isConfirmed: true,
-             status: 'On Time', // Status field
-             gate: '24', // Gate field
-             liveLink: 'https://live.flighty.app/2af42e286-3d91-4f25-91b8-d22148de4e6a' // Flighty Live Link
+             status: 'On Time', 
+             gate: '24', 
+             liveLink: 'https://live.flighty.app/2af42e286-3d91-4f25-91b8-d22148de4e6a' // Link added here
            },
            { 
              id: 'return', 
@@ -1125,7 +1125,7 @@
              isConfirmed: false,
              status: 'Scheduled',
              gate: '--',
-             liveLink: '' // Can be added later
+             liveLink: '' 
            }
         ]);
         const activeFlight = computed(() => {
