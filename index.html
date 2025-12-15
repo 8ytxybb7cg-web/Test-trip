@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v3.15</title>
+  <title>Travel Sync v3.14</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -149,7 +149,6 @@
       font-size: 17px;
       color: #000;
       width: 100%;
-      box-sizing: border-box; /* Ensure padding doesn't affect width */
       transition: background 0.2s;
     }
     .ios-input:focus {
@@ -286,8 +285,8 @@
           <h1 class="text-[34px] leading-tight font-bold tracking-tight text-black drop-shadow-sm font-[SF Pro Display]">
              eMenu Taipei
           </h1>
-          <div class="flex items-center gap-2 mt-0.5 pl-1">
-            <span class="text-[9px] font-semibold text-gray-400/80 uppercase tracking-widest">{{ appVersion }}</span>
+          <div class="flex items-center gap-3 mt-1 pl-1">
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-widest">{{ appVersion }}</span>
             
             <div class="flex items-center gap-2 bg-white/50 backdrop-blur-md px-2 py-0.5 rounded-full border border-black/5">
                 <div class="w-1.5 h-1.5 rounded-full transition-colors duration-300"
@@ -363,7 +362,7 @@
                      <span class="text-lg font-bold text-gray-800 tracking-tight">{{ weather.desc }}</span>
                      
                      <div class="flex items-center gap-1 text-[11px] font-bold text-[#007AFF] bg-blue-50/80 px-2 py-0.5 rounded-full border border-blue-100/50">
-                        <i class="ph ph-drop-fill text-xs"></i> 降雨機率 {{ weather.rain }}%
+                        <i class="ph ph-drop-fill text-xs"></i> 降雨機率{{ weather.rain }}%
                      </div>
 
                      <div v-if="weather.warning" class="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 animate-pulse">
@@ -377,23 +376,14 @@
                  </div>
              </div>
 
-             <div class="mt-4 grid grid-cols-4 gap-1 w-full text-center">
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">體感</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.feelsLike }}°</span>
-                </div>
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">濕度</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.humidity }}%</span>
-                </div>
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">風速</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.wind }}</span>
-                </div>
-                <div class="flex flex-col items-center justify-center">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">UV</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.uv }}</span>
-                </div>
+             <div class="mt-2.5 flex items-center gap-2.5 text-xs text-gray-500 font-medium overflow-x-auto no-scrollbar whitespace-nowrap opacity-80">
+                <span>體感 {{ weather.feelsLike }}°</span>
+                <span class="text-gray-300">•</span>
+                <span>濕度 {{ weather.humidity }}%</span>
+                <span class="text-gray-300">•</span>
+                <span>風速 {{ weather.wind }}km/h</span>
+                <span class="text-gray-300">•</span>
+                <span>UV {{ weather.uv }}</span>
              </div>
           </div>
         </div>
@@ -768,32 +758,30 @@
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 ml-1 font-bold">日期</label>
-                        <div class="w-full">
-                           <input v-model="newFlight.date" type="date" class="ios-input w-full">
-                        </div>
+                        <input v-model="newFlight.date" type="date" class="ios-input">
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 ml-1 font-bold">航班代碼</label>
                         <input v-model="newFlight.code" class="ios-input" placeholder="如: CX400">
                     </div>
                     <div class="flex gap-3">
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1">
                              <label class="text-xs text-gray-400 ml-1 font-bold">出發地</label>
-                            <input v-model="newFlight.fromCode" class="ios-input text-center uppercase w-full" placeholder="HKG">
+                            <input v-model="newFlight.fromCode" class="ios-input text-center uppercase" placeholder="HKG">
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1">
                               <label class="text-xs text-gray-400 ml-1 font-bold">目的地</label>
-                            <input v-model="newFlight.toCode" class="ios-input text-center uppercase w-full" placeholder="TPE">
+                            <input v-model="newFlight.toCode" class="ios-input text-center uppercase" placeholder="TPE">
                         </div>
                     </div>
                     <div class="flex gap-3">
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1">
                             <label class="text-xs text-gray-400 ml-1 font-bold">起飛</label>
-                            <input v-model="newFlight.depTime" type="time" class="ios-input w-full">
+                            <input v-model="newFlight.depTime" type="time" class="ios-input">
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1">
                              <label class="text-xs text-gray-400 ml-1 font-bold">抵達</label>
-                             <input v-model="newFlight.arrTime" type="time" class="ios-input w-full">
+                             <input v-model="newFlight.arrTime" type="time" class="ios-input">
                         </div>
                     </div>
                      <textarea v-model="newFlight.note" class="ios-input" rows="2" placeholder="備註 (航廈、座位等)"></textarea>
@@ -918,9 +906,9 @@
                          </div>
                     </div>
 
-                    <div class="mt-2 w-full">
+                    <div class="mt-2">
                         <label class="block text-xs font-bold text-gray-400 mb-1 ml-1 uppercase">日期</label>
-                        <input v-model="newExpense.date" type="date" class="ios-input text-gray-600 w-full">
+                        <input v-model="newExpense.date" type="date" class="ios-input text-gray-600">
                     </div>
                 </div>
                 <div class="ios-modal-footer">
@@ -994,7 +982,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251214-3.15'); // Version Updated
+        const appVersion = ref('v3.14 (Build 251214)'); // Version Updated
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
