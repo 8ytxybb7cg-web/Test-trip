@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v3.17</title>
+  <title>Travel Sync v3.18</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -78,11 +78,10 @@
     /* iOS Premium Dark Glass Card (Flight/Expense) */
     .ios-card-dark-glass {
       background: rgba(22, 22, 24, 0.85);
-      /* Slightly darker for better contrast */
       backdrop-filter: blur(50px);
       -webkit-backdrop-filter: blur(50px);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 26px; /* iOS 26 rounded corners */
+      border-radius: 26px;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
       color: white;
       position: relative;
@@ -349,17 +348,35 @@
         
         <div class="ios-card p-5 relative">
           <div class="flex justify-between items-start">
-              <div>
-                  <div class="flex items-center gap-1.5 text-gray-500 mb-0.5">
+              <div class="flex-1">
+                  <div class="flex items-center gap-1.5 text-gray-500 mb-1">
                     <i class="ph ph-map-pin-simple-area text-xs"></i>
                     <span class="text-[11px] font-bold uppercase tracking-wider">台北市</span>
                   </div>
-                  <div class="text-[52px] leading-none font-light tracking-tighter text-black flex items-start">
-                    {{ weather.temp }}<span class="text-3xl mt-1 font-normal">°</span>
+                  
+                  <div class="flex items-end gap-5">
+                      <div class="text-[52px] leading-none font-light tracking-tighter text-black flex items-start">
+                        {{ weather.temp }}<span class="text-3xl mt-1 font-normal">°</span>
+                      </div>
+                      
+                      <div class="flex flex-col gap-1 pb-1.5">
+                          <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                             <span class="text-[10px] uppercase text-gray-400 font-bold w-6">體感</span>
+                             <span class="text-gray-800">{{ weather.feelsLike }}°</span>
+                          </div>
+                           <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                             <span class="text-[10px] uppercase text-gray-400 font-bold w-6">濕度</span>
+                             <span class="text-gray-800">{{ weather.humidity }}%</span>
+                          </div>
+                           <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                             <span class="text-[10px] uppercase text-gray-400 font-bold w-6">風速</span>
+                             <span class="text-gray-800">{{ weather.wind }}</span>
+                          </div>
+                      </div>
                   </div>
               </div>
-              <div class="text-right pt-1">
-                 <i :class="weatherIconClass" class="text-[3.5rem] text-gray-800/80 drop-shadow-sm"></i>
+              <div class="text-right pt-1 pl-2">
+                 <i :class="weatherIconClass" class="text-[4rem] text-gray-800/80 drop-shadow-sm"></i>
               </div>
           </div>
           
@@ -381,25 +398,6 @@
                      <span>H:{{ weather.max }}°</span>
                      <span>L:{{ weather.min }}°</span>
                  </div>
-             </div>
-
-             <div class="mt-4 grid grid-cols-4 gap-1 w-full text-center">
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                   <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">體感</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.feelsLike }}°</span>
-                </div>
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                   <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">濕度</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.humidity }}%</span>
-                </div>
-                <div class="flex flex-col items-center justify-center border-r border-gray-300/30 last:border-0">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">風速</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.wind }}</span>
-                </div>
-                <div class="flex flex-col items-center justify-center">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase mb-0.5">UV</span>
-                    <span class="text-xs font-semibold text-gray-800">{{ weather.uv }}</span>
-                </div>
              </div>
           </div>
         </div>
@@ -642,7 +640,7 @@
                      </button>
                  </div>
                  
-                <div class="relative z-10">
+                <div class="relative z-10 flex flex-col items-center justify-center">
                     <div class="text-white/60 text-[11px] font-bold tracking-widest uppercase mb-1">總支出 (HKD)</div>
                     <div class="text-5xl font-light tracking-tight mb-2 text-white flex items-baseline">
                         <span class="text-2xl opacity-60 mr-1">$</span>{{ formatNumber(totalExpense.hkd, 0) }}
@@ -653,11 +651,13 @@
                   <div class="grid grid-cols-2 gap-4 mt-6 relative z-10">
                     <div class="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5">
                         <div class="text-white/50 text-[10px] uppercase tracking-wider mb-1"><i class="ph ph-credit-card mr-1"></i>信用卡</div>
-                        <div class="text-lg font-bold text-white">${{ formatNumber(totalExpense.creditHkd, 0) }}</div>
+                        <div class="text-lg font-bold text-white mb-0.5">${{ formatNumber(totalExpense.creditHkd, 0) }}</div>
+                        <div class="text-[10px] text-white/40">≈ TWD {{ formatNumber(totalExpense.creditTwd, 0) }}</div>
                     </div>
                     <div class="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5">
                         <div class="text-white/50 text-[10px] uppercase tracking-wider mb-1"><i class="ph ph-coins mr-1"></i>現金</div>
-                         <div class="text-lg font-bold text-white">${{ formatNumber(totalExpense.cashHkd, 0) }}</div>
+                         <div class="text-lg font-bold text-white mb-0.5">${{ formatNumber(totalExpense.cashHkd, 0) }}</div>
+                         <div class="text-[10px] text-white/40">≈ TWD {{ formatNumber(totalExpense.cashTwd, 0) }}</div>
                     </div>
                  </div>
              </div>
@@ -678,13 +678,14 @@
                              <i class="ph" :class="e.paymentMethod === 'credit_card' ? 'ph-credit-card' : 'ph-coins'"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-gray-900 text-[15px]">{{ e.name }}</div>
-                            <div class="text-[11px] font-medium text-gray-400 mt-0.5">{{ e.category }} · {{ e.date }}</div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">{{ e.date }}</div>
+                            <div class="font-bold text-gray-900 text-[16px]">{{ e.name }}</div>
+                            <div class="text-[11px] font-medium text-gray-500 mt-0.5">{{ e.category }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="text-right">
-                           <div class="font-bold text-gray-900 text-[16px]">{{ e.currency }} <span class="text-base">{{ formatNumber(e.amount, 0) }}</span></div>
+                           <div class="font-bold text-gray-900 text-[16px]">{{ e.currency }} <span class="text-base">{{ formatNumber(e.amount, 2) }}</span></div>
                         </div>
                         
                          <div class="action-btn-group">
@@ -812,16 +813,24 @@
                             <option value="Landed">Landed (已抵達)</option>
                         </select>
                     </div>
-                    <div class="flex gap-3">
-                        <div class="flex-1 min-w-0">
-                             <label class="text-xs text-gray-400 ml-1 font-bold">出發地</label>
-                            <input v-model="newFlight.fromCode" class="ios-input text-center uppercase w-full" placeholder="HKG">
+                    
+                    <div class="flex gap-2">
+                         <div class="flex-1 min-w-0">
+                             <label class="text-xs text-gray-400 ml-1 font-bold">出發</label>
+                             <div class="flex gap-1">
+                                <input v-model="newFlight.fromCode" class="ios-input text-center uppercase w-2/3" placeholder="HKG">
+                                <input v-model="newFlight.fromTerminal" class="ios-input text-center uppercase w-1/3 text-sm px-1" placeholder="T1">
+                             </div>
                          </div>
-                        <div class="flex-1 min-w-0">
-                              <label class="text-xs text-gray-400 ml-1 font-bold">目的地</label>
-                              <input v-model="newFlight.toCode" class="ios-input text-center uppercase w-full" placeholder="TPE">
+                         <div class="flex-1 min-w-0">
+                              <label class="text-xs text-gray-400 ml-1 font-bold">抵達</label>
+                              <div class="flex gap-1">
+                                <input v-model="newFlight.toCode" class="ios-input text-center uppercase w-2/3" placeholder="TPE">
+                                <input v-model="newFlight.toTerminal" class="ios-input text-center uppercase w-1/3 text-sm px-1" placeholder="T1">
+                              </div>
                         </div>
                     </div>
+                    
                     <div class="flex gap-3">
                         <div class="flex-1 min-w-0">
                             <label class="text-xs text-gray-400 ml-1 font-bold">起飛</label>
@@ -945,6 +954,7 @@
                                 <option value="餐飲">🍔 餐飲</option>
                                 <option value="交通">🚕 交通</option>
                                  <option value="購物">🛍 購物</option>
+                                 <option value="住宿">🏨 住宿</option>
                                 <option value="其他">🧩 其他</option>
                             </select>
                              <i class="ph ph-caret-down absolute right-3 top-[18px] text-gray-400 text-xs pointer-events-none"></i>
@@ -1034,13 +1044,13 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251216-3.17'); // Version Updated
+        const appVersion = ref('v251216-3.18'); // Version Updated
         const currentTab = ref('行程');
         const selectedDay = ref(0); 
 
         // --- Sync Status & Initialization ---
         const syncState = ref('synced');
-        const isInitialized = ref(false); // CRITICAL: Prevent saving before loading
+        const isInitialized = ref(false); 
         const syncStatusText = computed(() => {
           const map = { 'synced': '已同步', 'saving': '儲存中...', 'loading': '更新中...', 'error': '錯誤' };
           return map[syncState.value] || '未知';
@@ -1092,9 +1102,9 @@
              title: 'Cathay Pacific', 
              note: 'Economy', 
              isConfirmed: true,
-             status: 'On Time', // Status field
-             gate: '24', // Gate field
-             liveLink: 'https://live.flighty.app/2af42e286-3d91-4f25-91b8-d22148de4e6a' // Flighty Live Link
+             status: 'On Time', 
+             gate: '24', 
+             liveLink: 'https://live.flighty.app/2af42e286-3d91-4f25-91b8-d22148de4e6a' 
            },
            { 
              id: 'return', 
@@ -1112,7 +1122,7 @@
              isConfirmed: false,
              status: 'Scheduled',
              gate: '--',
-             liveLink: '' // Can be added later
+             liveLink: 'https://live.flighty.app/29fab3b3b-3e56-439f-8292-853a0a6f1bf3' // Added Return Link
            }
         ]);
         const activeFlight = computed(() => {
@@ -1187,25 +1197,33 @@
         const newFlight = reactive({});
         // --- Logic ---
         const totalExpense = computed(() => {
-          const rateVal = 1 / (Number(rate.value) || 4); // Convert back for logic
+          const rateVal = 1 / (Number(rate.value) || 4); 
           let total = 0, credit = 0, cash = 0;
           expenses.value.forEach(e => {
              let amount = Number(e.amount) || 0;
-             
              if (e.currency === 'TWD') amount *= rateVal;
              else if (CURRENCY_RATES[e.currency]) amount *= CURRENCY_RATES[e.currency];
-             
              total += amount;
              if(e.paymentMethod === 'credit_card') credit += amount; else cash += amount;
           });
           return { hkd: total, twd: total / rateVal, creditHkd: credit, creditTwd: credit / rateVal, cashHkd: cash, cashTwd: cash / rateVal };
         });
+        
+        // Filtered and Sorted Expenses (Newest Date First)
         const filteredExpenses = computed(() => {
             let list = expenses.value;
             if (expenseFilter.value === 'credit') list = list.filter(e => e.paymentMethod === 'credit_card');
             else if (expenseFilter.value === 'cash') list = list.filter(e => e.paymentMethod !== 'credit_card');
-            return [...list].sort((a, b) => b.id - a.id);
+            
+            return [...list].sort((a, b) => {
+                // Sort by Date Descending
+                if (a.date > b.date) return -1;
+                if (a.date < b.date) return 1;
+                // If date same, sort by created ID (Newest first)
+                return b.id - a.id;
+            });
         });
+
         // --- Weather & Rate ---
         const weather = reactive({ temp:'--', desc:'載入中', rain: 0, code:0, min:'--', max:'--', warning: null, feelsLike:'--', humidity:'--', wind:'--', uv:'--' });
         const weatherIconClass = computed(() => {
@@ -1218,7 +1236,6 @@
         const rate = ref(null);
         const formattedRate = computed(() => rate.value || '...');
         const lastRateUpdate = ref(null);
-        // Updated Date Logic
         const lastRateUpdateLabel = computed(() => {
             if(!lastRateUpdate.value) return '--:--';
             const d = lastRateUpdate.value;
@@ -1359,7 +1376,7 @@
         }
 
         function openFlightModal(id) {
-             const def = { id: null, type: 'outbound', date: '2025-12-15', code: '', depTime:'', arrTime:'', fromCode:'HKG', toCode:'TPE', status: 'Scheduled', gate: '--' };
+             const def = { id: null, type: 'outbound', date: '2025-12-15', code: '', depTime:'', arrTime:'', fromCode:'HKG', toCode:'TPE', status: 'Scheduled', gate: '--', fromTerminal: '', toTerminal: '' };
              if(id === 'new') {
                  def.type = days[selectedDay.value]?.type === 'flight-return' ? 'return' : 'outbound';
                  if(def.type === 'return') { def.fromCode='TPE'; def.toCode='HKG'; def.date='2025-12-18';
@@ -1428,7 +1445,6 @@
             setTimeout(() => isRemoteUpdate = false, 500);
         }
         async function saveAll() {
-            // CRITICAL FIX: Do not save if it's a remote update OR if we haven't loaded initial data yet.
             if(isRemoteUpdate || !isInitialized.value) return; 
 
             syncState.value = 'saving';
@@ -1449,13 +1465,10 @@
                 const { data } = await supabaseClient.from('trip_data').select('content').eq('id', TRIP_ID).single();
                 
                 if(data?.content) {
-                    // Cloud has data
                     if (JSON.stringify(data.content) !== JSON.stringify(getPayload())) {
                         applyData(data.content);
                     }
                 } else if (!auto) {
-                    // Cloud is empty (New Trip or Clean Slate), AND it is the initial manual load.
-                    // Initialize Default Data ONLY if cloud is empty.
                      if(itinerary[0].length === 0) {
                         itinerary[0] = [
                             { id:1, title: '航班抵達', time:'14:45', note:'第二航廈', address:'', dayIndex: 0 },
@@ -1466,7 +1479,6 @@
                 syncState.value = 'synced';
             } catch(e) { if(!auto) syncState.value = 'error'; }
             finally {
-                // MARK APP AS INITIALIZED. Only now can we start saving changes.
                 if(!auto) {
                     setTimeout(() => { isInitialized.value = true; }, 500);
                 }
@@ -1477,20 +1489,17 @@
 
         async function fetchRate() {
             try {
-                // Source: open.er-api.com
                 const res = await fetch('https://open.er-api.com/v6/latest/TWD');
                 const d = await res.json();
                 if(d?.rates?.HKD) {
                     const hkdToTwd = 1 / d.rates.HKD;
                     rate.value = hkdToTwd.toFixed(2);
-                    lastRateUpdate.value = new Date(); // Set Update Time
+                    lastRateUpdate.value = new Date(); 
                 }
             } catch(e) {}
         }
         async function fetchWeather() {
              try {
-                // Source: Open-Meteo
-                // Enhanced params for additional data:
                 const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.0330&longitude=121.5654&current_weather=true&hourly=precipitation_probability,relativehumidity_2m,apparent_temperature,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei');
                 const d = await res.json();
                 if(d.current_weather) {
@@ -1498,7 +1507,6 @@
                     weather.code = d.current_weather.weathercode;
                     
                     const c = weather.code;
-                    // Reset Warning
                     weather.warning = null;
                     if(c >= 95) { weather.desc = '雷陣雨'; weather.warning = '雷雨特報';
                     }
@@ -1513,12 +1521,10 @@
                     else weather.desc = '晴天';
                     const currentHour = new Date().getHours();
                     
-                    // Rain Probability
                     if(d.hourly && d.hourly.precipitation_probability) {
                          weather.rain = d.hourly.precipitation_probability[currentHour] || 0;
                     }
                     
-                    // Additional Metrics
                     if(d.hourly) {
                         weather.feelsLike = d.hourly.apparent_temperature ? Math.round(d.hourly.apparent_temperature[currentHour]) : '--';
                         weather.humidity = d.hourly.relativehumidity_2m ? d.hourly.relativehumidity_2m[currentHour] : '--';
@@ -1537,20 +1543,18 @@
         }
 
         onMounted(() => {
-            fetchCloud(false); // Initial Load (fetches first, then sets isInitialized=true)
+            fetchCloud(false); 
             fetchRate(); 
             fetchWeather();
             
             setInterval(fetchRate, 600000); 
             setInterval(fetchWeather, 600000);
             
-            // Auto-refresh cloud every 15s
             setInterval(() => {
                 if(isInitialized.value) fetchCloud(true);
             }, 15000);
         });
         
-        // Watch for changes, but Save Logic now checks isInitialized
         watch([itinerary, preTripNotes, shoppingList, expenses, infoList, flights], () => saveAll(), { deep: true });
         
         return {
