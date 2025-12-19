@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v5.03</title>
+  <title>Travel Sync v5.04</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
   <style>
-    /* --- iOS 26 System Variables --- */
+    /* --- iOS 17 System Variables --- */
     :root {
       --ios-bg: #F2F2F7;
       --ios-card-bg: rgba(255, 255, 255, 0.65);
@@ -186,6 +186,13 @@
     .calc-btn.op:active { background: #D47B00; }
     .calc-btn.top-op { background: #D1D1D6; color: black; }
     .calc-btn.top-op:active { background: #A0A0A5; }
+    
+    .calc-btn.done-btn {
+        background: var(--ios-primary);
+        color: white;
+        font-size: 17px;
+        font-weight: 600;
+    }
 
     /* Dock */
     .iphone-dock {
@@ -665,7 +672,7 @@
                                 {{ s.amount >= 0 ? '+' : '' }}{{ formatNumber(s.amount, 0) }} <span class="text-[10px] text-gray-400 font-normal ml-0.5">HKD</span>
                             </div>
                             <div class="text-[10px] text-gray-400 font-medium mt-0.5">
-                                ≈ TWD {{ formatNumber(Math.abs(s.amount * (rate || 4.1)), 0) }}
+                                ≈ TWD {{ formatNumber(Math.abs(s.amount * (currentLiveRate || 4.1)), 0) }}
                             </div>
                         </div>
                     </div>
@@ -708,6 +715,7 @@
                             <div v-if="e.payer" class="text-[9px] text-gray-400 font-medium mt-0.5">
                                 {{ e.payer }} 代付 <span v-if="e.involved && e.involved.length > 0">({{ e.involved.length }}人分)</span>
                             </div>
+                            <div v-if="e.exchangeRate" class="text-[8px] text-gray-300 font-mono mt-0.5">Rate: {{ e.exchangeRate.toFixed(2) }}</div>
                         </div>
                    </div>
                </div>
@@ -967,13 +975,16 @@
 
                     <div class="flex flex-col gap-2 p-2 bg-gray-100/60 rounded-xl mb-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-gray-400 w-12 text-right">誰付錢?</span>
+                            <span class="text-[10px] font-bold text-gray-400 w-12 text-right">支付者</span>
                             <select v-model="newExpense.payer" class="flex-1 bg-white h-8 rounded-lg text-xs font-bold px-2 border border-gray-200">
                                 <option v-for="m in members" :key="m" :value="m">{{ m }}</option>
                             </select>
                         </div>
+                        
                         <div class="flex items-start gap-2">
-                             <span class="text-[10px] font-bold text-gray-400 w-12 text-right mt-1.5">分給誰?</span>
+                             <div class="w-12 text-right mt-1.5 flex flex-col items-end">
+                                 <button @click="toggleAllParticipants" class="text-[10px] font-bold text-[#007AFF] active:opacity-60 transition">全選</button>
+                             </div>
                              <div class="flex-1 flex flex-wrap gap-1.5">
                                  <button v-for="m in members" :key="m" 
                                     @click="toggleParticipant(m)"
@@ -990,15 +1001,15 @@
                          <input v-model="newExpense.date" type="date" class="ios-input w-32 text-gray-600 text-sm h-10 text-center">
                     </div>
 
-                    <div class="flex gap-2 mb-1">
+                    <div class="flex gap-2 mb-1 p-1 bg-gray-200/50 rounded-xl">
                         <button @click="newExpense.paymentMethod='cash'" 
-                             class="flex-1 h-12 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 transition-all border border-transparent"
-                             :class="newExpense.paymentMethod==='cash' ? 'bg-[#34C759] text-white shadow-md' : 'bg-gray-100 text-gray-400 border-gray-200'">
+                             class="flex-1 h-10 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition-all"
+                             :class="newExpense.paymentMethod==='cash' ? 'bg-white text-black shadow-sm ring-1 ring-black/5' : 'text-gray-400'">
                              <i class="ph ph-coins text-lg"></i> 現金
                         </button>
                         <button @click="newExpense.paymentMethod='credit_card'" 
-                             class="flex-1 h-12 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 transition-all border border-transparent"
-                             :class="newExpense.paymentMethod==='credit_card' ? 'bg-[#007AFF] text-white shadow-md' : 'bg-gray-100 text-gray-400 border-gray-200'">
+                             class="flex-1 h-10 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition-all"
+                             :class="newExpense.paymentMethod==='credit_card' ? 'bg-white text-black shadow-sm ring-1 ring-black/5' : 'text-gray-400'">
                              <i class="ph ph-credit-card text-lg"></i> 信用卡
                         </button>
                     </div>
@@ -1026,8 +1037,8 @@
                         
                         <button class="calc-btn col-span-2" @click="handleCalcInput('0')">0</button>
                         <button class="calc-btn" @click="handleCalcInput('.')">.</button>
-                         <button class="calc-btn bg-[#007AFF] !text-white" @click="saveExpense">
-                             <i class="ph ph-check text-xl"></i>
+                        <button class="calc-btn done-btn" @click="saveExpense">
+                            完成
                          </button>
                      </div>
                 </div>
@@ -1128,7 +1139,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251219-5.03'); // Version Updated
+        const appVersion = ref('v251219-5.04'); // Version Updated
         const currentTab = ref('準備'); 
         const selectedDay = ref(0); 
 
@@ -1267,19 +1278,32 @@
              if(i > -1) newExpense.involved.splice(i, 1);
              else newExpense.involved.push(name);
         }
+        function toggleAllParticipants() {
+            if(newExpense.involved.length === members.value.length) {
+                // Deselect all except payer if possible, but simplicity: Deselect All
+                newExpense.involved = [];
+            } else {
+                newExpense.involved = [...members.value];
+            }
+        }
 
         // --- Settlement Logic ---
         const settlementData = computed(() => {
              const balances = {};
              members.value.forEach(m => balances[m] = 0);
              
-             const currentRate = Number(rate.value) || 4.10;
+             // Current Live Rate is fallback if historical rate missing
+             const liveRate = Number(rate.value) || 4.10;
 
              expenses.value.forEach(e => {
                  let amount = Number(e.amount) || 0;
                  let hkdAmt = 0;
+                 
+                 // Use HISTORICAL rate if exists, else Live
+                 const usedRate = e.exchangeRate || liveRate;
+
                  // Normalize to HKD for settlement
-                 if (e.currency === 'TWD') hkdAmt = amount / currentRate;
+                 if (e.currency === 'TWD') hkdAmt = amount / usedRate;
                  else if (e.currency === 'HKD') hkdAmt = amount;
                  else if (e.currency === 'USD') hkdAmt = amount * 7.8; // Approx
                  else if (e.currency === 'JPY') hkdAmt = amount * 0.052; // Approx
@@ -1356,15 +1380,20 @@
         }
 
         // --- Logic ---
+        const currentLiveRate = ref(null);
+
         const totalExpense = computed(() => {
-          const currentRate = Number(rate.value) || 4.10; 
+          const liveRate = Number(rate.value) || 4.10; 
           let totalHKD = 0; let totalTWD = 0; let creditHKD = 0; let cashHKD = 0;
 
           expenses.value.forEach(e => {
              let amount = Number(e.amount) || 0;
              let amountInHKD = 0;
+             
+             // Use stored rate if available, else live rate
+             const usedRate = e.exchangeRate || liveRate;
 
-             if (e.currency === 'TWD') amountInHKD = amount / currentRate;
+             if (e.currency === 'TWD') amountInHKD = amount / usedRate;
              else if (e.currency === 'HKD') amountInHKD = amount;
              else if (CURRENCY_RATES[e.currency]) amountInHKD = amount / CURRENCY_RATES['USD'] * 7.8; 
 
@@ -1373,19 +1402,20 @@
              else cashHKD += amountInHKD;
           });
           
-          totalTWD = totalHKD * currentRate;
-          return { hkd: totalHKD, twd: totalTWD, creditHkd: creditHKD, creditTwd: creditHKD * currentRate, cashHkd: cashHKD, cashTwd: cashHKD * currentRate };
+          totalTWD = totalHKD * liveRate; // Total display usually uses live rate for referencing
+          return { hkd: totalHKD, twd: totalTWD, creditHkd: creditHKD, creditTwd: creditHKD * liveRate, cashHkd: cashHKD, cashTwd: cashHKD * liveRate };
         });
+
         const filteredExpenses = computed(() => {
             let list = expenses.value;
-            // IMPORTANT: If 'all', we return the list as is (to preserve drag order)
-            if (expenseFilter.value === 'all') return list;
+            // Removed date sorting logic here to allow Drag Order to prevail.
+            // The list order in 'expenses.value' IS the truth order.
             
-            // If filtering, returns a new array (Sortable might act weird here, but usually people drag in 'all')
             if (expenseFilter.value === 'credit') list = list.filter(e => e.paymentMethod === 'credit_card');
             else if (expenseFilter.value === 'cash') list = list.filter(e => e.paymentMethod !== 'credit_card');
             return list; 
         });
+
         // --- Weather & Rate ---
         const weather = reactive({ temp:'--', desc:'載入中', rain: 0, code:0, min:'--', max:'--', warning: null, feelsLike:'--', humidity:'--', wind:'--', uv:'--' });
         const weatherIconClass = computed(() => {
@@ -1516,7 +1546,8 @@
                 paymentMethod:'cash', 
                 date: new Date().toISOString().split('T')[0],
                 payer: lastPayer.value || members.value[0] || '我',
-                involved: [...members.value] // Default to everyone
+                involved: [...members.value], // Default to everyone
+                exchangeRate: null // Will be set on save
             };
             openGenericModal(expenseModalOpen, newExpense, def, item);
         }
@@ -1528,11 +1559,15 @@
             } catch(e) {}
             
             if(!newExpense.name) newExpense.name = newExpense.category;
-            // Set default participants if empty
             if(!newExpense.involved || newExpense.involved.length === 0) {
                 newExpense.involved = [...members.value];
             }
             
+            // Set Exchange Rate (Permanent) if new or missing
+            if (!newExpense.exchangeRate) {
+                newExpense.exchangeRate = Number(currentLiveRate.value) || 4.10;
+            }
+
             // Update last payer
             lastPayer.value = newExpense.payer;
             const item = { ...newExpense, id: newExpense.id || generateId() };
@@ -1543,13 +1578,7 @@
                 expenses.value.splice(idx, 1, item); 
             } else {
                 // New Item: Insert based on Date (Newest first) logic
-                // Find the first item where its date is OLDER (smaller) than new item, or same.
-                // Actually, standard is Newest at Top.
-                // We find the first item that is Older (date < item.date) and insert before it.
-                // If list is: [20th, 18th, 15th], and we add 19th. 19th < 20th? No. 19th < 18th? No.
-                // Wait. We want 20, 19, 18.
-                // So we want to insert where item.date >= current.date is FALSE.
-                
+                // This puts it in the correct "block" of dates, but doesn't override manual sorting of other items.
                 let insertIndex = -1;
                 for(let i=0; i<expenses.value.length; i++) {
                      if (expenses.value[i].date < item.date) {
@@ -1561,16 +1590,6 @@
                 if (insertIndex !== -1) {
                     expenses.value.splice(insertIndex, 0, item);
                 } else {
-                    // If no older date found, push to end? No, if list is empty or all dates are newer?
-                    // If all dates are newer (e.g. List: [20th], New: 21st). 21st > 20th. Loop doesn't break.
-                    // We want 21st at top.
-                    // Wait. Logic check:
-                    // List: [2025-12-15]. Add: 2025-12-18.
-                    // 15 < 18? Yes. Break. Insert at 0. Result: [18, 15]. Correct.
-                    
-                    // List: [2025-12-18]. Add: 2025-12-15.
-                    // 18 < 15? No. Loop finishes.
-                    // We should append to end.
                     expenses.value.push(item);
                 }
             }
@@ -1625,7 +1644,7 @@
             const el = document.getElementById(elementId);
             if (!el) return;
             
-            // Disable if not on 'all' filter for expenses to prevent logic errors
+            // Disable dragging if filter is active (to prevent logic errors)
             if (elementId === 'sortable-expenses' && expenseFilter.value !== 'all') return;
 
             Sortable.create(el, {
@@ -1636,6 +1655,7 @@
                 delay: 200, 
                 delayOnTouchOnly: true,
                 onEnd: function (evt) {
+                    // Update the array immediately
                     const item = listData.splice(evt.oldIndex, 1)[0];
                     listData.splice(evt.newIndex, 0, item);
                     saveAll();
@@ -1758,6 +1778,7 @@
                     const hkdToTwd = 1 / d.rates.HKD;
                     const rateWithFee = hkdToTwd * 0.98; // 2% Fee
                     rate.value = rateWithFee.toFixed(2);
+                    currentLiveRate.value = rateWithFee; // Store for logic use
                     lastRateUpdate.value = new Date(); 
                 }
             } catch(e) {}
@@ -1843,7 +1864,7 @@
         return {
            appVersion, syncState, syncStatusText, forceReloadCloud,
            currentTab, days, selectDay, selectedDay, isFlightDay,
-           weather, weatherIconClass, formattedRate, lastRateUpdateLabel, rate,
+           weather, weatherIconClass, formattedRate, lastRateUpdateLabel, rate, currentLiveRate,
            activeFlight, shouldShowFlightCard, getStatusClass,
            selectedMapLocation, showLocationOnMap, generateMapLink,
            preTripNotes, newPreNote, addPreNote, removePreNote, editPreNote, togglePreNoteDone, preNoteModalOpen, editingPreNote, closePreNoteModal, savePreNoteEdit,
@@ -1857,7 +1878,7 @@
            imageViewer, openImageViewer, formatNumber,
            // New Members & Split Bill props
            members, memberModalOpen, openMemberModal, closeMemberModal, addMember, removeMember, newMemberName,
-           toggleParticipant, settlementList, settlementStatus
+           toggleParticipant, settlementList, settlementStatus, toggleAllParticipants
         };
       }
     }).mount('#app');
