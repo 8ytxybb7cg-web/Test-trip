@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v5.0 Pro</title>
+  <title>Travel Sync v5.0.1</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -237,7 +237,7 @@
            <div class="text-2xl font-bold text-gray-800 tracking-tight font-mono leading-none my-0.5">
              {{ formattedRate }}
            </div>
-           <div class="text-[9px] font-medium text-gray-400 font-mono">2% Fee Included</div>
+           <div class="text-[9px] font-medium text-gray-400 font-mono">包括 2% 手續費</div>
         </div>
       </div>
 
@@ -261,7 +261,7 @@
              <div class="flex-1">
                   <div class="flex items-center gap-1.5 text-gray-500 mb-2">
                     <i class="ph ph-map-pin-simple-area text-xs"></i>
-                    <span class="text-[11px] font-bold uppercase tracking-wider">Taipei City</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider">台北市</span>
                   </div>
                   <div class="flex items-center gap-4"> 
                       <div class="text-[60px] leading-none font-light tracking-tighter text-black flex items-start">
@@ -286,7 +286,7 @@
               <div class="p-4 pb-2 relative z-10 flex justify-between items-center">
                    <div class="flex items-center gap-2">
                       <i class="ph ph-airplane-in-flight text-[#007AFF]"></i>
-                      <span class="text-xs font-bold uppercase tracking-widest opacity-70">FLIGHT STATUS</span>
+                      <span class="text-xs font-bold uppercase tracking-widest opacity-70">航班動態</span>
                   </div>
                   <div class="px-2 py-0.5 rounded text-[10px] font-bold border border-white/20" :class="getStatusClass(activeFlight.status)">{{ activeFlight.status }}</div>
               </div>
@@ -359,7 +359,7 @@
              </div>
 
             <div class="relative z-10 flex flex-col items-center justify-center -mt-2">
-                <div class="text-white/60 text-[11px] font-bold tracking-widest uppercase mb-1">TOTAL (HKD)</div>
+                <div class="text-white/60 text-[11px] font-bold tracking-widest uppercase mb-1">總支出 (HKD)</div>
                   <div class="text-5xl font-light tracking-tight mb-2 text-white flex items-baseline">
                     <span class="text-2xl opacity-60 mr-1">$</span>{{ formatNumber(totalExpense.hkd, 0) }}
                 </div>
@@ -440,7 +440,7 @@
       </div>
 
       <div v-if="currentTab === '準備'" class="animate-fade-in">
-        <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">CHECKLIST</h3>
+        <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">準備清單</h3>
         <ul class="space-y-2" id="sortable-pre-notes">
             <li v-for="note in preTripNotes" :key="note.id" :data-id="note.id" class="ios-list-item">
                 <div class="drag-handle text-gray-300 mr-2"><i class="ph ph-dots-six-vertical text-lg"></i></div>
@@ -462,7 +462,7 @@
       </div>
 
       <div v-if="currentTab === '購物'" class="animate-fade-in">
-         <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">WISH LIST</h3>
+         <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">購物清單</h3>
          <ul class="space-y-3" id="sortable-shopping">
              <li v-for="item in shoppingList" :key="item.id" :data-id="item.id" class="ios-list-item !items-start">
                  <div class="drag-handle text-gray-300 mr-2 mt-1"><i class="ph ph-dots-six-vertical text-lg"></i></div>
@@ -539,10 +539,9 @@
         <div v-if="expenseModalOpen" class="fixed inset-0 modal-backdrop flex items-center justify-center p-3" @click.self="closeExpenseModal">
             <div class="ios-modal-container max-w-[360px]">
                  <div class="ios-modal-header flex justify-between items-center px-4">
-                     <span class="text-transparent">Cancel</span>
+                     <button @click="closeExpenseModal" class="text-[#007AFF] font-normal">取消</button>
                      <span>{{ newExpense.id ? '編輯消費' : '新增消費' }}</span>
-                     <button @click="closeExpenseModal" class="bg-gray-200 text-gray-500 rounded-full p-1"><i class="ph ph-x text-sm"></i></button>
-                 </div>
+                     <div class="w-8"></div> </div>
                  
                  <div class="ios-modal-body !p-0 bg-gray-50">
                      <div class="p-4 pb-0">
@@ -615,7 +614,7 @@
                                  <option value="cash">現金</option><option value="credit_card">信用卡</option>
                              </select>
                              <button @click="saveExpenseWithCalc" class="flex-1 btn-ios-primary h-12 text-lg">
-                                 OK
+                                 確定
                              </button>
                          </div>
                      </div>
@@ -722,7 +721,7 @@
 
     createApp({
       setup() {
-        const appVersion = ref('v5.0 Pro');
+        const appVersion = ref('v5.0.1');
         const syncState = ref('loading');
         const syncStatusText = computed(() => ({ 'synced': '已同步', 'saving': '儲存...', 'loading': '載入...', 'error': '離線' }[syncState.value]));
         
@@ -760,7 +759,7 @@
         const weather = reactive({ temp: 24, feelsLike: 26, rain: 10, desc: '多雲', code: 3 });
         const rate = ref(4.15);
         const formattedRate = computed(() => rate.value.toFixed(2));
-        const weatherIconClass = computed(() => 'ph-cloud-sun'); // Simplified logic for demo
+        const weatherIconClass = computed(() => 'ph-cloud-sun'); 
 
         // --- Expenses Advanced ---
         const expenseFilter = ref('all');
@@ -825,35 +824,28 @@
             const balances = {};
             members.value.forEach(m => balances[m] = 0);
             
-            // Default center is the first member
             const centerPerson = members.value[0]; 
 
             expenses.value.forEach(e => {
                 let amtHKD = Number(e.amount);
                 if (e.currency === 'TWD') amtHKD /= rate.value;
-                // Simplified currency conv for demo
+                if (e.currency === 'JPY') amtHKD *= 0.052;
                 
                 const payer = e.payer || centerPerson;
                 const involved = (e.involved && e.involved.length > 0) ? e.involved : members.value;
                 const splitAmt = amtHKD / involved.length;
 
-                // Payer gets positive (owed money)
                 if (balances[payer] !== undefined) balances[payer] += amtHKD;
                 
-                // Consumers get negative (owe money)
                 involved.forEach(p => {
                     if (balances[p] !== undefined) balances[p] -= splitAmt;
                 });
             });
 
-            // Format: Who pays/receives relative to the "pool" concept, 
-            // but the prompt asks specifically: A needs X, B needs Y. 
-            // In a zero-sum game, sum is 0. 
-            // Positive = Net Receiver. Negative = Net Payer.
             return Object.keys(balances).map(k => ({
                 name: k,
                 amount: balances[k]
-            })).filter(x => Math.abs(x.amount) > 1); // Filter tiny diffs
+            })).filter(x => Math.abs(x.amount) > 1); 
         });
 
         // --- Modals & Actions ---
@@ -873,13 +865,12 @@
             newExpense.amount = parseFloat(calcDisplay.value);
             if (!newExpense.name) newExpense.name = newExpense.category;
             
-            // Save logic
             const item = { ...newExpense, id: newExpense.id || generateId() };
             const idx = expenses.value.findIndex(e => e.id === item.id);
             if (idx !== -1) expenses.value.splice(idx, 1, item);
             else expenses.value.unshift(item);
             
-            lastPayer.value = newExpense.payer; // Remember payer
+            lastPayer.value = newExpense.payer; 
             expenseModalOpen.value = false;
             saveAll();
         }
@@ -902,8 +893,7 @@
             saveAll();
         }
 
-        // --- Standard Logic (Itinerary, Shopping etc) ---
-        // (Simplified for brevity, same logic as v4.3 but adapted for v5 structure)
+        // --- Standard Logic ---
         const itineraryModalOpen = ref(false);
         const newItineraryItem = reactive({});
         const quickItinerary = reactive({time:'', title:''});
@@ -947,6 +937,7 @@
              if(idx!==-1) infoList.value.splice(idx,1,item); else infoList.value.push(item);
              infoModalOpen.value=false; saveAll();
         }
+        function removeInfo(id) { infoList.value = infoList.value.filter(x=>x.id!==id); saveAll(); }
         
         const newPreNote = ref('');
         function addPreNote() { if(newPreNote.value) { preTripNotes.value.push({id:generateId(), name:newPreNote.value, isDone:false}); newPreNote.value=''; saveAll(); }}
@@ -990,10 +981,10 @@
                 if(c.expenses) expenses.value = c.expenses;
                 if(c.infoList) infoList.value = c.infoList;
                 if(c.preTripNotes) preTripNotes.value = c.preTripNotes;
-                if(c.members) members.value = c.members; // Sync members
+                if(c.members) members.value = c.members; 
                 syncState.value = 'synced';
             } else {
-                syncState.value = 'synced'; // New trip
+                syncState.value = 'synced'; 
             }
         }
         
@@ -1006,7 +997,7 @@
                     updated_at: Date.now(),
                     itinerary, shoppingList: shoppingList.value, expenses: expenses.value,
                     infoList: infoList.value, preTripNotes: preTripNotes.value,
-                    members: members.value // Save members
+                    members: members.value 
                 };
                 await supabaseClient.from('trip_data').upsert({ id: TRIP_ID, content: payload });
                 syncState.value = 'synced';
@@ -1014,16 +1005,16 @@
         }
         function forceReloadCloud() { fetchCloud(); }
 
+        // Sortable Init Helper (Moved outside onMounted to avoid scope issues)
+        const initSort = (id, list) => {
+             const el = document.getElementById(id);
+             if(el) Sortable.create(el, { handle:'.drag-handle', animation:150, onEnd:(e)=>{
+                 const item = list.splice(e.oldIndex,1)[0]; list.splice(e.newIndex,0,item); saveAll();
+             }});
+        };
+
         onMounted(() => {
              fetchCloud();
-             
-             // Sortable Init Helper
-             const initSort = (id, list) => {
-                 const el = document.getElementById(id);
-                 if(el) Sortable.create(el, { handle:'.drag-handle', animation:150, onEnd:(e)=>{
-                     const item = list.splice(e.oldIndex,1)[0]; list.splice(e.newIndex,0,item); saveAll();
-                 }});
-             };
              
              watch(currentTab, () => {
                  nextTick(() => {
@@ -1054,12 +1045,12 @@
             toggleInvolved, kp, calcDisplay,
             
             shoppingModalOpen, newShoppingItem, openShoppingModal, saveShoppingItem, removeShoppingItem,
-            infoModalOpen, newInfoItem, openInfoModal, saveInfoItem, removeInfo, // Added removeInfo
+            infoModalOpen, newInfoItem, openInfoModal, saveInfoItem, removeInfo,
             itineraryModalOpen, newItineraryItem, saveItineraryItem, removeItineraryItem,
             
             // UI Helpers
             getCategoryIcon, getCategoryColor, formatNumber, settlementResult,
-            imageViewer, openImageViewer, showLocationOnMap: (it) => { if(it.address) window.open(`https://maps.google.com/?q=${it.address}`) }
+            imageViewer, openImageViewer, showLocationOnMap: (it) => { if(it.address) window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(it.address)); }
         };
       }
     }).mount('#app');
