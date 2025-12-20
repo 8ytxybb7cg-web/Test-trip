@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v5.07</title>
+  <title>Travel Sync v5.08</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -104,10 +104,11 @@
     }
     .ios-list-item:active { background: rgba(255, 255, 255, 0.95); transform: scale(0.98); }
 
-    /* Drag & Drop Styles - FIXED for iOS Stability */
+    /* Drag & Drop Styles */
     .sortable-ghost { opacity: 0.4; background: #e5e7eb; border: 1px dashed #9ca3af; }
     .sortable-drag { opacity: 1; background: #fff; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform: scale(1.02); z-index: 50; }
     
+    /* Strict Drag Handle for iOS Stability */
     .drag-handle { 
         cursor: grab; 
         padding: 10px; 
@@ -115,7 +116,7 @@
         display: flex; 
         align-items: center; 
         justify-content: center; 
-        touch-action: pan-y; /* Key fix for iOS scrolling vs dragging */
+        touch-action: pan-y; /* Crucial for scrolling */
         -webkit-user-select: none;
         user-select: none;
     }
@@ -1145,7 +1146,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251220-5.07'); // Version Updated
+        const appVersion = ref('v251220-5.08'); // Version Updated
         const currentTab = ref('準備'); 
         const selectedDay = ref(0); 
 
@@ -1407,22 +1408,19 @@
         // FIXED SORTING LOGIC (CORE FIX)
         // ----------------------------------------------------
         const filteredExpenses = computed(() => {
-            let list = [];
-            // Filter first
-            if (expenseFilter.value === 'credit') list = expenses.value.filter(e => e.paymentMethod === 'credit_card');
-            else if (expenseFilter.value === 'cash') list = expenses.value.filter(e => e.paymentMethod !== 'credit_card');
-            else list = [...expenses.value];
+            // FIX: If dragging, return raw proxy to prevent Sortable conflict
+            if (isDraggingExpense.value) return expenses.value;
 
-            // If dragging, FREEZE order to allow SortableJS to handle DOM
-            if (isDraggingExpense.value) return list;
+            let list = [...expenses.value];
 
-            // Strict Sort Priority:
-            // 1. Manual Order Index (asc)
-            // 2. Date (desc)
-            // 3. Created At (desc)
+            // Filter logic
+            if (expenseFilter.value === 'credit') list = list.filter(e => e.paymentMethod === 'credit_card');
+            else if (expenseFilter.value === 'cash') list = list.filter(e => e.paymentMethod !== 'credit_card');
+
+            // Strict Sort Priority: Manual Index -> Date -> Created At
             return list.sort((a, b) => {
-                 const orderA = (a.order_index !== undefined && a.order_index !== null) ? a.order_index : 99999;
-                 const orderB = (b.order_index !== undefined && b.order_index !== null) ? b.order_index : 99999;
+                 const orderA = (a.order_index !== undefined) ? a.order_index : 99999;
+                 const orderB = (b.order_index !== undefined) ? b.order_index : 99999;
                  
                  if (orderA !== orderB) return orderA - orderB;
                  if (a.date !== b.date) return new Date(b.date) - new Date(a.date);
@@ -1606,7 +1604,7 @@
 
             const idx = expenses.value.findIndex(e => e.id === newExpense.id);
             if(idx !== -1) {
-                // Editing existing - keep order_index
+                // Editing existing - keep existing order_index
                 expenses.value.splice(idx, 1, item);
             } else {
                 // NEW ITEM: Add to bottom (Max + 1)
@@ -1691,7 +1689,10 @@
         let expenseSortableInstance = null;
         function initExpenseSortable() {
              const el = document.getElementById('sortable-expenses');
-             if (expenseSortableInstance) expenseSortableInstance.destroy();
+             if (expenseSortableInstance) {
+                 expenseSortableInstance.destroy();
+                 expenseSortableInstance = null;
+             }
              if (!el) return;
 
              expenseSortableInstance = Sortable.create(el, {
@@ -1707,7 +1708,7 @@
                 onEnd: (evt) => {
                     isDraggingExpense.value = false;
                     
-                    // Core Fix: Manipulate underlying array, then re-index
+                    // Core Fix: Manipulate underlying array directly
                     const moved = expenses.value.splice(evt.oldIndex, 1)[0];
                     expenses.value.splice(evt.newIndex, 0, moved);
 
@@ -1721,7 +1722,7 @@
              });
         }
 
-        // Watchers for initialization
+        // --- Watchers for initialization (FIXED LIFECYCLE) ---
         watch(currentTab, (val) => {
              nextTick(() => {
                  setTimeout(() => {
@@ -1730,21 +1731,26 @@
                     if(val === '購物') initSortable('sortable-shopping', shoppingList.value);
                     if(val === '資訊') initSortable('sortable-info', infoList.value);
                     
-                    // Special Init for Expenses
+                    // Only init expenses if filter is 'all'
                     if(val === '記帳' && expenseFilter.value === 'all') {
                         initExpenseSortable();
+                    } else if (expenseSortableInstance) {
+                        expenseSortableInstance.destroy();
+                        expenseSortableInstance = null;
                     }
                  }, 50);
              });
         });
 
-        // Re-init sortable when filter changes back to all
+        // Watch filter to disable drag
         watch(expenseFilter, (val) => {
             if(val === 'all' && currentTab.value === '記帳') {
                 nextTick(() => setTimeout(() => initExpenseSortable(), 50));
-            } else if (expenseSortableInstance) {
-                // Destroy if filter is active to prevent sorting
-                expenseSortableInstance.destroy();
+            } else {
+                if (expenseSortableInstance) {
+                    expenseSortableInstance.destroy();
+                    expenseSortableInstance = null;
+                }
             }
         });
 
@@ -1773,8 +1779,8 @@
             // --- Expenses Data Patching ---
             if(d.expenses) {
                  let loaded = initializeListWithIds(d.expenses);
+                 // Only backfill order_index on LOAD, not in computed
                  loaded.forEach((e, i) => {
-                     // Backfill missing order_index
                      if(e.order_index === undefined || e.order_index === null) e.order_index = i; 
                      if(!e.created_at) e.created_at = Date.now();
                  });
