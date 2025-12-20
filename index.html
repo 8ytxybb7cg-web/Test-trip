@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v5.09</title>
+  <title>Travel Sync v5.09.01</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -237,7 +237,63 @@
     /* Flight Status */
     .status-ontime { color: var(--ios-success); background: rgba(52, 199, 89, 0.15); border: 1px solid rgba(52, 199, 89, 0.2); }
     .status-delayed { color: var(--ios-danger); background: rgba(255, 59, 48, 0.15); border: 1px solid rgba(255, 59, 48, 0.2); }
-    .status-boarding { color: var(--ios-warning); background: rgba(255, 204, 0, 0.15); border: 1px solid rgba(255, 204, 0, 0.2); }
+    .status-boarding { color: var(--ios-warning);
+      background: rgba(255, 204, 0, 0.15); border: 1px solid rgba(255, 204, 0, 0.2);
+    }
+
+    /* --- HKG Board Style (v5.09.01) --- */
+    .ios-card-dark-glass.hkg-style {
+      background: #353E53 !important;
+      backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+      border: none !important; border-radius: 6px !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+      display: flex; flex-direction: column;
+    }
+    .hkg-style .dark-glass-gradient { display: none; }
+    
+    /* 1. Header Area (Status) -> Moved to Bottom as Red Bar */
+    .hkg-style > div:nth-child(2) { 
+      order: 2; 
+      background: #BF443B; 
+      margin: 0; padding: 12px 20px !important;
+      border-radius: 0 0 6px 6px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .hkg-style > div:nth-child(2) * { color: #FFFFFF !important; opacity: 1 !important; font-family: monospace; letter-spacing: 1px; }
+    .hkg-style .status-ontime, .hkg-style .status-delayed, .hkg-style .status-boarding {
+        background: transparent !important; border: none !important; padding: 0 !important; font-weight: 800 !important; font-size: 14px !important;
+    }
+    .hkg-style a[href*="flighty"] { background: transparent !important; border: none !important; padding: 0 !important; }
+
+    /* 2. Main Content (Info + Gate) -> Moved to Top */
+    .hkg-style > div:nth-child(3) { 
+      order: 1; 
+      background: #353E53;
+      padding-bottom: 20px !important; padding-top: 15px !important;
+      border-radius: 6px 6px 0 0;
+    }
+
+    /* 3. Middle White Box (Route Info) */
+    .hkg-style .flex.items-center.justify-between.mt-4 {
+      background: #FFFFFF;
+      margin: 10px -20px 20px -20px;
+      padding: 15px 25px;
+    }
+    .hkg-style .flex.items-center.justify-between.mt-4 * { color: #000000 !important; text-shadow: none !important; }
+    .hkg-style .h-\[2px\] { background: #000000 !important; opacity: 0.2; }
+    
+    /* 4. Gate Styling (Huge Yellow) */
+    .hkg-style .text-\[\#FFCC00\] {
+      color: #E9EB4F !important;
+      font-size: 3.5rem !important;
+      font-family: sans-serif !important;
+      font-weight: 800 !important;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.3);
+      line-height: 1;
+    }
+    /* Labels & Times on Blue Background */
+    .hkg-style .text-2xl.font-mono { color: #FFFFFF !important; }
+    .hkg-style .uppercase.tracking-widest { color: #FFFFFF !important; opacity: 0.6; }
 
   </style>
 </head>
@@ -314,14 +370,20 @@
       <div v-if="currentTab === '行程'" class="space-y-5 mb-6">
         
         <transition name="fade">
-          <div v-if="shouldShowFlightCard" class="ios-card-dark-glass p-0 mb-4">
+          <div v-if="shouldShowFlightCard" class="ios-card-dark-glass p-0 mb-4 transition-all duration-500"
+               :class="{ 'hkg-style': flightBoardStyle === 'hkg' }">
               <div class="dark-glass-gradient"></div>
               
               <div class="p-5 pb-2 relative z-10">
                   <div class="flex justify-between items-center mb-1">
-                       <div class="flex items-center gap-2">
-                          <i class="ph ph-airplane-in-flight text-[#007AFF] text-lg"></i>
-                          <span class="text-xs font-bold uppercase tracking-widest opacity-70">即時航班動態</span>
+                       <div class="flex items-center gap-2 cursor-pointer active:opacity-50 transition" 
+                            @click="flightBoardStyle = flightBoardStyle === 'hkg' ? 'ios' : 'hkg'"
+                            title="切換顯示風格">
+                    
+                           <i class="ph ph-airplane-in-flight text-[#007AFF] text-lg"></i>
+                          <span class="text-xs font-bold uppercase tracking-widest opacity-70">
+                              {{ flightBoardStyle === 'hkg' ? 'HKG BOARD' : 'FLIGHT LIVE' }}
+                          </span>
                       </div>
                        <button @click.stop="openFlightModal(activeFlight.id)" class="text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition backdrop-blur-md">
                           <i class="ph ph-pencil-simple text-sm"></i>
@@ -1143,7 +1205,8 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251220-5.09'); // Version Updated
+        const appVersion = ref('v251221-5.09.01'); // Version Updated
+        const flightBoardStyle = ref('hkg'); // Styles: 'hkg' | 'ios'
         const currentTab = ref('準備'); 
         const selectedDay = ref(0); 
 
