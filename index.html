@@ -166,10 +166,9 @@
     .ios-modal-body { flex: 1; overflow-y: auto; padding: 24px; -webkit-overflow-scrolling: touch; }
     
     /* Calculator specific modal padding */
-    .ios-modal-body.calc-body { padding: 16px 16px 8px 16px; overflow-y: hidden; display: flex; flex-direction: column; } 
+    .ios-modal-body.calc-body { padding: 16px 16px 8px 16px; overflow-y: hidden; display: flex; flex-direction: column; }
 
     .ios-modal-footer { padding: 16px 24px; border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; gap: 12px; flex-shrink: 0; background: rgba(255,255,255,0.5); }
-
     /* Buttons */
     .btn-ios-cancel {
       flex: 1;
@@ -239,321 +238,44 @@
     .status-delayed { color: var(--ios-danger); background: rgba(255, 59, 48, 0.15); border: 1px solid rgba(255, 59, 48, 0.2); }
     .status-boarding { color: var(--ios-warning); background: rgba(255, 204, 0, 0.15); border: 1px solid rgba(255, 204, 0, 0.2); }
 
-    /* --- HKG Flight Board Style --- */
-
-    /* 外層：共用 flight-card-shell + 依 state 切換 HKG / iOS */
-    .flight-card-shell {
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* HKG 版本主體：實色啞面、無玻璃、無陰影 */
+    /* Flight Card HKG Style */
     .flight-card-hkg {
-      background-color: #353E53;
-      color: #FFFFFF;
-      border-radius: 12px;
-      box-shadow: none;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border: none;
+      background-color: #353E53 !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: white;
     }
-
-    /* 禁用玻璃光暈層 */
-    .flight-card-hkg .dark-glass-gradient {
+    .flight-card-hkg .dark-glass-gradient,
+    .flight-card-hkg .ios-card-dark-glass > div > div:first-child,
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(2) {
       display: none;
     }
-
-    /* Header 區：上方文字與切換鈕容器 */
-    .flight-card-hkg .flight-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* Header 左邊 - 「即時航班動態」 */
-    .flight-card-hkg .flight-card-header-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #FFFFFF;
-    }
-
-    .flight-card-hkg .flight-card-header-left-label {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      opacity: 0.9;
-    }
-
-    .flight-card-hkg .flight-card-header-left-icon {
-      color: #E9EB4F;
-    }
-
-    /* Header 右邊 - 編輯按鈕 + 風格切換 */
-    .flight-card-hkg .flight-card-header-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .flight-card-hkg .flight-card-edit-btn {
-      background: #353E53;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 4px 8px;
-      color: #FFFFFF;
-    }
-
-    .flight-card-hkg .flight-card-edit-btn i {
-      font-size: 12px;
-    }
-
-    /* 風格切換 pill（只用 class 控制造型，不改 DOM 結構） */
-    .flight-style-toggle {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      padding: 1px;
-      font-size: 9px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      background-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .flight-style-toggle button {
-      border-radius: 999px;
-      padding: 2px 6px;
-      border: none;
-      background: transparent;
-      color: rgba(255, 255, 255, 0.7);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .flight-style-toggle button.active {
-      background: #E9EB4F;
-      color: #000000;
-    }
-
-    /* 狀態列上方小標籤 */
-    .flight-card-hkg .flight-card-status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
-    }
-
-    /* HKG 狀態 pill：偏資訊小 tag */
-    .flight-card-hkg .flight-card-status-pill {
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(3) {
       background-color: #FFFFFF;
       color: #000000;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
+      border-radius: 2px;
       border: none;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      padding: 8px;
     }
-
-    /* Flighty link 在 HKG 風格下收斂一點 */
-    .flight-card-hkg .flight-card-flightylink {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background-color: #353E53;
-      border: 1px solid rgba(233, 235, 79, 0.6);
-      color: #E9EB4F;
-    }
-
-    .flight-card-hkg .flight-card-flightylink i {
-      animation: none;
-    }
-
-    /* 中央主資訊區：白底黑字 */
-    .flight-card-hkg .flight-card-main {
-      margin-top: 12px;
-      background-color: #FFFFFF;
-      color: #000000;
-      border-radius: 4px;
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .flight-card-hkg .flight-card-airport-block {
-      min-width: 60px;
-      text-align: center;
-    }
-
-    .flight-card-hkg .flight-card-airport-code {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-    }
-
-    .flight-card-hkg .flight-card-terminal {
-      font-size: 9px;
-      font-weight: 700;
-      margin-top: 3px;
-      text-transform: uppercase;
-      color: #444444;
-    }
-
-    .flight-card-hkg .flight-card-middle {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .flight-card-hkg .flight-card-code {
-      font-family: ui-monospace, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 10px;
-      opacity: 0.7;
-    }
-
-    .flight-card-hkg .flight-card-plane {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .flight-card-hkg .flight-card-plane-line {
-      height: 2px;
-      flex: 1;
-      border-radius: 999px;
-      background-color: #000000;
-      opacity: 0.1;
-    }
-
-    .flight-card-hkg .flight-card-plane-icon {
-      color: #000000;
-      opacity: 0.9;
-      font-size: 18px;
-    }
-
-    .flight-card-hkg .flight-card-note {
-      font-size: 10px;
-      font-weight: 500;
-      text-align: center;
-      margin-top: 2px;
-    }
-
-    /* 下方紅色狀態條：整個 footer 改成紅底 */
-    .flight-card-hkg .flight-card-footer {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: none;
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(4) {
       background-color: #BF443B;
-      border-radius: 0 0 12px 12px;
-      padding-bottom: 8px;
-      padding-left: 12px;
-      padding-right: 12px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 0;
     }
-
-    .flight-card-hkg .footer-left,
-    .flight-card-hkg .footer-right {
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(4) .text-[10px]:first-child {
       color: #FFFFFF;
     }
-
-    .flight-card-hkg .footer-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      margin-bottom: 2px;
-      opacity: 0.85;
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(4) .text-[10px]:nth-child(2) {
+      color: #E9EB4F;
+      font-size: 14px;
     }
-
-    .flight-card-hkg .footer-time {
-      font-size: 18px;
-      font-family: ui-monospace, SF Mono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    /* Gate 區塊：巨大黃色登機閘口號碼 */
-    .flight-card-hkg .footer-gate {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 80px;
-    }
-
-    .flight-card-hkg .footer-gate-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      margin-bottom: 2px;
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(4) .text-[10px]:last-child {
       color: #FFFFFF;
-      opacity: 0.8;
     }
-
-    .flight-card-hkg .footer-gate-value {
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 0.16em;
+    .flight-card-hkg .ios-card-dark-glass > div > div:nth-child(4) .text-2xl {
       color: #E9EB4F;
     }
-
-    /* Gate 未填時用 -- 仍保留風格 */
-    .flight-card-hkg .footer-gate-value span {
-      display: inline-block;
-      min-width: 40px;
-      text-align: center;
-    }
-
-    /* 中央目的地：黃色強調文字，可用 arr 端城市碼當「To」重點 */
-    .flight-card-hkg .footer-destination {
-      flex: 1;
-      text-align: center;
-      color: #E9EB4F;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    /* 狀態文字：右下白字 */
-    .flight-card-hkg .footer-status {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    /* --- iOS Flight Style 調整：保留原本玻璃風，但用 class 區分 --- */
-
-    .flight-card-ios {
-      /* 使用原 ios-card-dark-glass 外觀 */
-    }
-
-    .flight-card-ios .flight-card-header-left-label {
-      /* 使用原本 Tailwind 的 text-xs + opacity 等，不做強制覆蓋 */
-    }
-
-    .flight-card-ios .flight-card-status-pill {
-      /* 使用原 getStatusClass 配合，維持玻璃色塊風格 */
-    }
-
-    .flight-card-ios .flight-card-main {
-      /* 不干涉原 px-5 區段，僅作為語義容器 */
-    }
-
-    .flight-card-ios .flight-card-footer {
-      /* 保留原 border-top + 背景透明玻璃 */
-    }
-
   </style>
 </head>
 
@@ -606,66 +328,29 @@
         </div>
       </div>
 
-      <div class="mb-8">
-        <div class="flex justify-between gap-3 overflow-x-auto no-scrollbar py-1 px-1">
-          <button @click="currentTab = '準備'" 
-               class="day-tab flex-shrink-0 w-[20%] h-[76px] rounded-2xl flex flex-col items-center justify-center text-xs relative overflow-hidden group"
-               :class="{ 'active': currentTab === '準備' }">
-             <i class="ph ph-list-checks text-2xl mb-1 text-gray-400 transition-colors group-[.active]:text-[#007AFF]"></i>
-             <span class="font-medium text-gray-500 group-[.active]:font-bold">準備</span>
-          </button>
-         
-           <button v-for="(d, i) in days" :key="i"
-                  @click="selectDay(i); currentTab = '行程'"
-                  class="day-tab flex-shrink-0 w-[22%] h-[76px] rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group"
-                  :class="{ 'active': selectedDay === i && currentTab === '行程' }">
-            <span class="text-[10px] font-bold uppercase text-gray-400 mb-0.5 group-[.active]:text-[#007AFF]">Day {{ i + 1 }}</span>
-            <span class="text-[11px] font-medium text-gray-400 group-[.active]:text-gray-800">{{ d.week }}</span>
-            <span class="text-lg font-bold mt-0.5 leading-none text-gray-600 group-[.active]:text-black">{{ d.date }}</span>
-          </button>
-        </div>
-      </div>
-
       <div v-if="currentTab === '行程'" class="space-y-5 mb-6">
-        
+
         <transition name="fade">
-          <div v-if="shouldShowFlightCard"
-               class="flight-card-shell p-0 mb-4"
-               :class="flightBoardStyle === 'hkg' ? 'flight-card-hkg' : 'ios-card-dark-glass flight-card-ios'">
+          <div v-if="shouldShowFlightCard" :class="['ios-card-dark-glass', flightBoardStyle === 'hkg' ? 'flight-card-hkg' : '']" class="p-0 mb-4">
               <div class="dark-glass-gradient"></div>
               
-              <div class="p-5 pb-2 relative z-10 flight-card-header">
-                  <div class="flex justify-between items-center mb-1 w-full">
-                       <div class="flex items-center gap-2 flight-card-header-left">
-                          <i class="ph ph-airplane-in-flight text-[#007AFF] text-lg flight-card-header-left-icon"></i>
-                          <span class="text-xs font-bold uppercase tracking-widest opacity-70 flight-card-header-left-label">即時航班動態</span>
+              <div class="p-5 pb-2 relative z-10">
+                  <div class="flex justify-between items-center mb-1">
+                       <div class="flex items-center gap-2">
+                          <i class="ph ph-airplane-in-flight text-[#007AFF] text-lg"></i>
+                          <span class="text-xs font-bold uppercase tracking-widest opacity-70">即時航班動態</span>
                       </div>
-                       <div class="flight-card-header-right flex items-center gap-2">
-                         <div class="flight-style-toggle">
-                           <button
-                             type="button"
-                             :class="flightBoardStyle === 'hkg' ? 'active' : ''"
-                             @click.stop="flightBoardStyle = 'hkg'">
-                             HKG
-                           </button>
-                           <button
-                             type="button"
-                             :class="flightBoardStyle === 'ios' ? 'active' : ''"
-                             @click.stop="flightBoardStyle = 'ios'">
-                             iOS
-                           </button>
-                         </div>
-                         <button @click.stop="openFlightModal(activeFlight.id)" class="text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition backdrop-blur-md flight-card-edit-btn">
-                            <i class="ph ph-pencil-simple text-sm"></i>
-                         </button>
-                       </div>
+                       <button @click.stop="openFlightModal(activeFlight.id)" class="text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition backdrop-blur-md">
+                          <i class="ph ph-pencil-simple text-sm"></i>
+                      </button>
                   </div>
-                  <div class="flex justify-between items-center mt-3 flight-card-status-row">
-                      <div class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide border backdrop-blur-md flight-card-status-pill"
+                  
+                  <div class="flex justify-between items-center mt-3">
+                      <div class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide border backdrop-blur-md"
                           :class="getStatusClass(activeFlight.status)">
                            {{ activeFlight.status || 'Scheduled' }}
                       </div>
-                      <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold text-white transition-all active:scale-95 flight-card-flightylink">
+                      <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold text-white transition-all active:scale-95">
                           <i class="ph ph-broadcast text-[#34C759] animate-pulse"></i>
                           Flighty 實況
                           <i class="ph ph-arrow-square-out text-xs opacity-70"></i>
@@ -674,960 +359,75 @@
               </div>
 
               <div class="px-5 pt-1 pb-6 relative z-10">
-                  <div class="flex items-center justify-between mt-4 flight-card-main">
-                    <div class="text-center min-w-[60px] flight-card-airport-block">
-                       <div class="text-3xl font-bold tracking-wider text-white flight-card-airport-code">{{ activeFlight.fromCode }}</div>
-                       <div class="text-[10px] font-bold opacity-60 mt-1 uppercase flight-card-terminal">{{ activeFlight.fromTerminal }}</div>
+                  <div class="flex items-center justify-between mt-4">
+                    <div class="text-center min-w-[60px]">
+                       <div class="text-3xl font-bold tracking-wider text-white">{{ activeFlight.fromCode }}</div>
+                       <div class="text-[10px] font-bold opacity-60 mt-1 uppercase">{{ activeFlight.fromTerminal }}</div>
                     </div>
                  
-                    <div class="flex-1 px-4 flex flex-col items-center flight-card-middle">
-                       <div class="text-[10px] font-mono opacity-50 mb-1 flight-card-code">{{ activeFlight.code }}</div>
-                       <div class="w-full flex items-center gap-2 flight-card-plane">
-                           <div class="h-[2px] bg-white/20 flex-1 rounded-full flight-card-plane-line"></div>
-                           <i class="ph ph-airplane-tilt text-xl opacity-90 text-[#007AFF] flight-card-plane-icon"></i>
-                           <div class="h-[2px] bg-white/20 flex-1 rounded-full flight-card-plane-line"></div>
+                    <div class="flex-1 px-4 flex flex-col items-center">
+                       <div class="text-[10px] font-mono opacity-50 mb-1">{{ activeFlight.code }}</div>
+                       <div class="w-full flex items-center gap-2">
+                           <div class="h-[2px] bg-white/20 flex-1 rounded-full"></div>
+                           <i class="ph ph-airplane-tilt text-xl opacity-90 text-[#007AFF]"></i>
+                           <div class="h-[2px] bg-white/20 flex-1 rounded-full"></div>
                        </div>
-                       <div class="text-[10px] mt-1.5 opacity-80 font-medium tracking-wide text-center flight-card-note">{{ activeFlight.note }}</div>
+                       <div class="text-[10px] mt-1.5 opacity-80 font-medium tracking-wide text-center">{{ activeFlight.note }}</div>
                     </div>
                     
-                    <div class="text-center min-w-[60px] flight-card-airport-block">
-                       <div class="text-3xl font-bold tracking-wider text-white flight-card-airport-code">{{ activeFlight.toCode }}</div>
-                       <div class="text-[10px] font-bold opacity-60 mt-1 uppercase flight-card-terminal">{{ activeFlight.toTerminal }}</div>
+                    <div class="text-center min-w-[60px]">
+                       <div class="text-3xl font-bold tracking-wider text-white">{{ activeFlight.toCode }}</div>
+                       <div class="text-[10px] font-bold opacity-60 mt-1 uppercase">{{ activeFlight.toTerminal }}</div>
                     </div>
                   </div>
                   
-                  <div class="flex justify-between items-end mt-6 pt-4 border-t border-white/10 flight-card-footer">
-                      <div class="footer-left">
-                          <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5 footer-label">預計起飛</div>
-                          <div class="text-2xl font-mono font-bold leading-none footer-time">{{ activeFlight.depTime }}</div>
+                  <div class="flex justify-between items-end mt-6 pt-4 border-t border-white/10">
+                      <div>
+                          <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5">預計起飛</div>
+                          <div class="text-2xl font-mono font-bold leading-none">{{ activeFlight.depTime }}</div>
                        </div>
                       
-                      <div class="flex flex-col items-center bg-white/10 px-4 py-2 rounded-xl border border-white/10 footer-gate">
-                           <div class="text-[9px] opacity-50 uppercase tracking-widest mb-0.5 footer-gate-label">登機閘口</div>
-                           <div class="text-xl font-bold text-[#FFCC00] footer-gate-value"><span>{{ activeFlight.gate || '--' }}</span></div>
-                      </div>
-                      
-                      <div class="text-right footer-right">
-                          <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5 footer-label">預計抵達</div>
-                          <div class="text-2xl font-mono font-bold leading-none footer-time">{{ activeFlight.arrTime }}</div>
+                      <div class="flex flex-col items-center bg-white/10 px-4 py-2 rounded-xl border border-white/10">
+                           <div class="text-[9px] opacity-50 uppercase tracking-widest mb-0.5">登機閘口</div>
+                           <div class="text-xl font-bold text-[#FFCC00]">{{ activeFlight.gate || '--' }}</div>
                       </div>
                   </div>
               </div>
-            </div>
+          </div>
         </transition>
 
-        <div class="ios-card p-5 relative">
-          <div class="flex justify-between items-center">
-            <div class="flex-1">
-                 <div class="flex items-center gap-1.5 text-gray-500 mb-2">
-                    <i class="ph ph-map-pin-simple-area text-xs"></i>
-                    <span class="text-[11px] font-bold uppercase tracking-wider">台北市</span>
-                  </div>
-                
-                  <div class="flex items-center gap-5"> 
-                      <div class="text-[64px] leading-none font-light tracking-tighter text-black flex items-start">
-                        {{ weather.temp }}<span class="text-4xl mt-1 font-normal">°</span>
-                      </div>
-                      
-                      <div class="flex flex-col gap-0.5 pb-1">
-                          <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                               <span class="text-[10px] uppercase text-gray-400 font-bold w-6">體感</span>
-                              <span class="text-gray-800">{{ weather.feelsLike }}°</span>
-                          </div>
-                          <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                             <span class="text-[10px] uppercase text-gray-400 font-bold w-6">濕度</span>
-                             <span class="text-gray-800">{{ weather.humidity }}%</span>
-                          </div>
-                          <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                             <span class="text-[10px] uppercase text-gray-400 font-bold w-6">UV</span>
-                             <span class="text-gray-800">{{ weather.uv }}</span>
-                          </div>
-                      </div>
-                  </div>
-            </div>
-              <div class="text-right pt-1 pl-2">
-                  <i :class="weatherIconClass" class="text-[4rem] text-gray-800/80 drop-shadow-sm"></i>
-              </div>
-          </div>
-          
-          <div class="mt-4 border-t border-gray-400/20 pt-3">
-             <div class="flex flex-wrap items-center justify-between gap-y-2">
-                 <div class="flex items-center gap-2">
-                     <span class="text-lg font-bold text-gray-800 tracking-tight">{{ weather.desc }}</span>
-                     
-                     <div class="flex items-center gap-1 text-[11px] font-bold text-[#007AFF] bg-blue-50/80 px-2 py-0.5 rounded-full border border-blue-100/50">
-                        <i class="ph ph-drop-fill text-xs"></i> 降雨機率 {{ weather.rain }}%
-                     </div>
-                     <div v-if="weather.warning" class="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 animate-pulse">
-                           <i class="ph ph-warning-fill"></i> {{ weather.warning }}
-                     </div>
-                 </div>
-                 
-                 <div class="flex gap-2 text-sm font-semibold text-gray-700/80">
-                      <span>H:{{ weather.max }}°</span>
-                     <span>L:{{ weather.min }}°</span>
-                 </div>
-             </div>
-          </div>
-        </div>
+      </div> 
 
-      <transition name="fade">
-         <div v-if="selectedMapLocation" class="ios-card bg-white/90 p-4 border-2 border-[#007AFF]/10 relative">
-                <button @click="selectedMapLocation = null" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full bg-gray-100 transition">
-                    <i class="ph ph-x text-base"></i>
-                </button>
-                
-               <div class="mb-4 pr-8">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0">
-                             <i class="ph ph-map-pin-fill text-lg"></i>
-                         </div>
-                        <h4 class="text-lg font-bold text-gray-900 leading-tight">{{ selectedMapLocation.title }}</h4>
-                    </div>
-                    <p class="text-sm text-gray-500 pl-[44px] leading-relaxed">{{ selectedMapLocation.address }}</p>
-               </div>
-                <div class="flex gap-3 pl-[44px]">
-                   <a :href="generateMapLink(selectedMapLocation.address, 'search')" target="_blank"
-                       class="h-10 px-4 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 rounded-xl font-bold active:scale-95 transition text-sm border border-gray-200">
-                    Google Map
-                    </a>
-                   <a :href="generateMapLink(selectedMapLocation.address, 'navigate')" target="_blank"
-                       class="flex-1 h-10 flex items-center justify-center gap-2 bg-[#007AFF] text-white rounded-xl font-bold active:scale-95 transition text-sm shadow-sm shadow-blue-200">
-                    <i class="ph ph-navigation-arrow text-lg"></i> 導航
-                    </a>
-                 </div>
-            </div>
-        </transition>
-      </div>
-
-      <div v-if="currentTab !== '準備' && currentTab !== '記帳'" class="mb-6 sticky top-2 z-20 pointer-events-none w-full flex justify-between items-center px-1">
-    
-         <div class="pointer-events-auto">
-             <button v-if="isFlightDay && currentTab === '行程'" @click="openFlightModal('new')" 
-               class="h-10 pl-3 pr-4 rounded-full bg-white/80 backdrop-blur-xl border border-white/50 text-[#007AFF] shadow-sm active:scale-95 transition-all flex items-center gap-2">
-                <i class="ph ph-airplane-tilt text-lg"></i>
-                <span class="text-xs font-bold">新增航班</span>
-               </button>
-        </div>
-
-        <button @click="openAddModal" 
-            class="pointer-events-auto h-11 pl-4 pr-5 rounded-full bg-[#007AFF] text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center gap-2">
-           <i class="ph ph-plus text-xl text-white/90"></i>
-           <span class="text-sm font-bold tracking-wide">{{ currentTab === '行程' ? '加入行程' : '新增項目' }}</span>
-        </button>
-      </div>
-
-      <div class="rounded-3xl transition-all duration-300">
-        
-         <div v-if="currentTab === '準備'">
-            <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">準備清單</h3>
-            <ul class="space-y-2.5" id="sortable-pre-notes">
-               <li v-for="(note, i) in preTripNotes" :key="note.id" :data-id="note.id" class="ios-list-item">
-                 <div class="drag-handle text-gray-300 hover:text-gray-500 mr-2 p-2">
-                     <i class="ph ph-dots-six-vertical text-xl"></i>
-                 </div>
-                 <div class="flex items-center gap-3.5 flex-1 min-w-0">
-                      <div class="relative cursor-pointer" @click="togglePreNoteDone(note.id)">
-                      <i class="ph text-2xl transition-colors" :class="note.isDone ? 'ph-check-circle-fill text-[#007AFF]' : 'ph-circle text-gray-300 hover:text-gray-400'"></i>
-                  </div>
-                  <span class="font-medium text-[16px] truncate" :class="{'task-done': note.isDone, 'text-gray-900': !note.isDone}">{{ note.name }}</span>
-                  </div>
-                <div class="action-btn-group">
-                   <button @click.stop="editPreNote(note)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
-                   <button @click.stop="removePreNote(note.id)" class="icon-btn delete"><i class="ph ph-trash text-lg"></i></button>
-                </div>
-               </li>
-            </ul>
-            
-            <div v-if="preTripNotes.length === 0" class="py-12 text-center">
-                <i class="ph ph-clipboard-text text-4xl text-gray-300 mb-2"></i>
-                <p class="text-sm text-gray-400">尚未建立準備清單</p>
-            </div>
-  
-             <div class="mt-6">
-               <div class="flex gap-3">
-                <input v-model="newPreNote" @keyup.enter="addPreNote" class="ios-input bg-white/70 shadow-sm" placeholder="快速新增項目...">
-                  <button @click="addPreNote" class="w-12 h-12 flex items-center justify-center bg-[#007AFF] text-white rounded-xl shadow-lg active:scale-95 transition flex-shrink-0">
-                   <i class="ph ph-plus text-xl"></i>
-                </button>
-              </div>
-            </div>
-         </div>
-
-         <div v-if="currentTab === '行程'">
-            <div class="relative pl-4 border-l-2 border-gray-300/50 ml-3 space-y-3 py-2" id="sortable-itinerary">
-    
-                  <div v-for="(it, idx) in sortedItinerary" :key="it.id" :data-id="it.id"
-                  @click="showLocationOnMap(it)"
-                  class="relative group cursor-pointer">
-               
-                <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-white border-[3px] border-gray-300 group-hover:border-[#007AFF] transition-colors z-10 shadow-sm"></div>
-                 
-                <div class="bg-white/70 backdrop-blur-xl rounded-2xl p-3 border border-white/60 shadow-sm transition-all active:scale-[0.99] active:bg-white/90">
-                    <div class="flex items-start gap-2">
-                        <div class="drag-handle cursor-grab text-gray-300 hover:text-gray-500 p-1 mt-0.5 -ml-1 flex-shrink-0 touch-action-none">
-                                <i class="ph ph-dots-six-vertical text-xl"></i>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center mb-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-[#007AFF] font-mono bg-blue-50/80 px-1.5 rounded">{{ it.time || '--:--' }}</span>
-                                </div>
-                                <button @click.stop="openItineraryModal(it)" class="text-gray-400 hover:text-[#007AFF] p-1 transition-colors rounded-full -mr-1">
-                                    <i class="ph ph-pencil-simple text-lg"></i>
-                                </button>
-                            </div>
-
-                           <div class="flex justify-between items-start">
-                                <div class="font-bold text-[16px] text-gray-900 leading-snug">{{ it.title }}</div>
-                                <button @click.stop="removeItineraryItem(it.id)" class="text-gray-400 hover:text-[#FF3B30] p-1 transition-colors rounded-full -mr-1 ml-2">
-                                    <i class="ph ph-trash text-lg"></i>
-                                </button>
-                            </div>
-                            <div v-if="it.note" class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ it.note }}</div>
-                            
-                            <div v-if="(it.address || '').trim() !== ''" class="mt-1 flex items-center gap-1.5 text-[10px] text-gray-400 group-hover:text-[#007AFF] transition-colors">
-                                <i class="ph ph-map-pin-line"></i>
-                                <span class="font-medium">查看地圖</span>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-              </div>
-            </div>
-
-             <p v-if="sortedItinerary.length === 0" class="py-12 text-center text-gray-400 text-sm">
-                <i class="ph ph-coffee text-3xl mb-2 block text-gray-300"></i>
-                  今日無行程，享受自由時光
-            </p>
-             
-            <div class="mt-8 ios-card !bg-white/60 p-3"> 
-                  <div class="flex gap-2">
-                   <input v-model="quickItinerary.time" type="time" class="ios-input !w-auto text-center !px-2 font-mono text-sm">
-                   <input v-model="quickItinerary.title" @keyup.enter="addQuickItinerary" class="ios-input flex-1 text-sm" placeholder="快速新增活動...">
-                    <button @click="addQuickItinerary" class="w-12 bg-[#007AFF] text-white rounded-xl shadow-md active:scale-95 transition flex items-center justify-center"><i class="ph ph-plus text-xl"></i></button>
-                 </div>
-            </div>
-          </div>
-
-        <div v-if="currentTab === '購物'">
-            <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">購物清單</h3>
-            <ul class="space-y-3" id="sortable-shopping">
-              <li v-for="(item, i) in shoppingList" :key="item.id" :data-id="item.id" 
-                   class="ios-list-item"
-                  :class="item.imageURL ? '!items-start' : '!items-center'">
-                
-                <div class="drag-handle text-gray-300 hover:text-gray-500 mr-2 p-1" :class="item.imageURL ? 'mt-2' : ''">
-                     <i class="ph ph-dots-six-vertical text-xl"></i>
-                </div>
-                
-                <div class="flex gap-3.5 flex-1 min-w-0" :class="item.imageURL ? 'items-start' : 'items-center'">
-                  <div class="cursor-pointer" :class="item.imageURL ? 'mt-1' : ''" @click="item.isDone = !item.isDone">
-                    <i class="ph text-2xl transition-all" :class="item.isDone ? 'ph-check-circle-fill text-green-500' : 'ph-circle text-gray-300 hover:text-gray-400'"></i>
-                  </div>
-                  <div class="flex-1 min-w-0 pt-0.5">
-                    <div class="font-bold text-[16px] text-gray-900 truncate" :class="{'task-done': item.isDone}">{{ item.name }}</div>
-                     <div v-if="item.imageURL" class="mt-3">
-                         <a v-if="isInstagramLink(item.imageURL)" :href="item.imageURL" target="_blank" 
-                           class="text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 hover:bg-gray-200 transition">
-                           <i class="ph ph-instagram-logo text-lg"></i> Post
-                         </a>
-                        <div v-else class="relative group/img cursor-pointer w-20 h-20 overflow-hidden rounded-lg border border-gray-200 shadow-sm" @click="openImageViewer(item.imageURL)">
-                             <img :src="item.imageURL" class="w-full h-full object-cover" alt="Thumbnail">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="action-btn-group">
-                    <button @click.stop="openShoppingModal(item)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
-                    <button class="icon-btn delete" @click="removeShoppingItem(item.id)"><i class="ph ph-trash text-lg"></i></button>
-                </div>
-              </li>
-            </ul>
-            <div v-if="shoppingList.length === 0" class="py-12 text-center">
-                  <i class="ph ph-bag text-4xl text-gray-300 mb-2"></i>
-                 <p class="text-sm text-gray-400">購物清單是空的</p>
-            </div>
-          </div>
-
-          <div v-if="currentTab === '記帳'">
-              <div class="ios-card-dark-glass p-6 mb-6">
-                 <div class="dark-glass-gradient"></div>
-                 <div class="absolute top-4 left-4 z-10">
-                    <button @click="openMemberModal" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-2 rounded-full backdrop-blur-md transition">
-                        <i class="ph ph-gear text-xl font-bold"></i>
-                     </button>
-                 </div>
-                 <div class="absolute top-4 right-4 z-10">
-                    <button @click="openExpenseModal(null)" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white p-2 rounded-full backdrop-blur-md transition">
-                       <i class="ph ph-plus text-xl font-bold"></i>
-                    </button>
-                 </div>
-                 
-                <div class="relative z-10 flex flex-col items-center justify-center">
-                   <div class="text-white/60 text-[11px] font-bold tracking-widest uppercase mb-1">總支出 (HKD)</div>
-                    <div class="text-5xl font-light tracking-tight mb-2 text-white flex items-baseline">
-                        <span class="text-2xl opacity-60 mr-1">$</span>{{ formatNumber(totalExpense.hkd, 0) }}
-                    </div>
-                   <div class="text-white/40 text-sm font-medium">≈ TWD {{ formatNumber(totalExpense.twd, 0) }}</div>
-                </div>
-                
-                  <div class="grid grid-cols-2 gap-4 mt-6 relative z-10">
-                    <div class="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5 flex flex-col items-center justify-center text-center">
-                         <div class="text-white/50 text-[10px] uppercase tracking-wider mb-1"><i class="ph ph-credit-card mr-1"></i>信用卡</div>
-                        <div class="text-lg font-bold text-white mb-0.5">${{ formatNumber(totalExpense.creditHkd, 0) }}</div>
-                        <div class="text-[10px] text-white/40">≈ TWD {{ formatNumber(totalExpense.creditTwd, 0) }}</div>
-                      </div>
-                      <div class="bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/5 flex flex-col items-center justify-center text-center">
-                        <div class="text-white/50 text-[10px] uppercase tracking-wider mb-1"><i class="ph ph-coins mr-1"></i>現金</div>
-                           <div class="text-lg font-bold text-white mb-0.5">${{ formatNumber(totalExpense.cashHkd, 0) }}</div>
-                          <div class="text-[10px] text-white/40">≈ TWD {{ formatNumber(totalExpense.cashTwd, 0) }}</div>
-                    </div>
-                 </div>
-              </div>
-
-               <div class="bg-gray-200/50 p-1 rounded-xl flex mb-6 mx-1 backdrop-blur-sm overflow-x-auto">
-                 <button v-for="f in ['all', 'credit', 'cash']" :key="f"
-                    @click="expenseFilter = f"
-                    class="flex-1 min-w-[60px] py-1.5 text-xs font-bold rounded-lg transition-all duration-200 whitespace-nowrap"
-                  :class="expenseFilter === f ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'">
-                    {{ f === 'all' ? '全部' : (f === 'credit' ? '信用卡' : '現金') }}
-                </button>
-                <button v-if="settlementStatus.hasData" 
-                    @click="expenseFilter = 'settlement'"
-                   class="flex-1 min-w-[60px] py-1.5 text-xs font-bold rounded-lg transition-all duration-200 whitespace-nowrap ml-1"
-                    :class="expenseFilter === 'settlement' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'">
-                    結算
-                </button>
-            </div>
-
-            <div v-if="expenseFilter === 'settlement'" class="space-y-3 pb-10">
-                <div v-if="settlementList.length > 0" class="space-y-3">
-                    <div v-for="s in settlementList" :key="s.name" class="ios-card bg-white p-4 flex justify-between items-center">
-                        <div class="font-bold text-lg text-gray-800">{{ s.name }}</div>
-                        <div class="text-right">
-                           <div class="text-[10px] uppercase text-gray-400 font-bold mb-0.5">
-                                {{ s.amount >= 0 ? '需收取' : '需支付' }}
-                            </div>
-                           <div class="text-xl font-bold font-mono" :class="s.amount >= 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'">
-                                {{ s.amount >= 0 ? '+' : '' }}{{ formatNumber(s.amount, 0) }} <span class="text-[10px] text-gray-400 font-normal ml-0.5">HKD</span>
-                            </div>
-                              <div class="text-[10px] text-gray-400 font-medium mt-0.5">
-                                ≈ TWD {{ formatNumber(Math.abs(s.amount * (currentLiveRate || 4.1)), 0) }}
-                            </div>
-                         </div>
-                    </div>
-                </div>
-                <div v-else class="py-10 text-center text-gray-400 text-sm">
-                    目前無結算資料
-                 </div>
-             </div>
-
-            <div v-else class="space-y-2 pb-10" id="sortable-expenses">
-               <div v-for="(e, i) in filteredExpenses" :key="e.id" :data-id="e.id" class="ios-list-item !items-start !flex-col !p-3">
-                   <div class="w-full flex justify-between items-center mb-1.5">
-                       <div class="flex items-center gap-2">
-                           <div v-if="expenseFilter === 'all'" class="drag-handle text-gray-300 hover:text-gray-500 p-1 -ml-1">
-                               <i class="ph ph-dots-six-vertical text-xl"></i>
-                            </div>
-                           <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide leading-none pt-0.5">{{ e.date }}</span>
-                           <div class="flex items-center gap-1.5 bg-gray-100/80 px-2 py-0.5 rounded-lg">
-                               <i class="ph text-xs text-gray-400" :class="getCategoryIcon(e.category)"></i>
-                             <span class="text-[10px] font-bold text-gray-500">{{ e.category }}</span>
-                           </div>
-                       </div>
-                  
-                       <div class="action-btn-group">
-                           <button @click.stop="openExpenseModal(e)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
-                           <button @click="removeExpense(e.id)" class="icon-btn delete"><i class="ph ph-trash text-lg"></i></button>
-                       </div>
-                   </div>
-
-                   <div class="w-full flex justify-between items-start pl-7">
-                        <div class="flex flex-col">
-                              <div class="font-bold text-gray-900 text-[20px] tracking-tight leading-none text-[#007AFF] flex items-baseline pt-1">
-                                <span class="text-[10px] font-medium text-gray-500 mr-0.5">{{ e.currency }}</span>{{ formatNumber(e.amount, 2) }}
-                            </div>
-                             <div v-if="e.exchangeRate" class="text-[10px] text-gray-400 font-mono mt-0.5">Rate {{ e.exchangeRate.toFixed(2) }}</div>
-                        </div>
-                        <div class="flex-1 flex flex-col items-end text-right min-w-0 ml-3">
-                           <div class="flex items-center gap-1 justify-end">
-                               <i class="ph text-gray-300 text-xs" :class="e.paymentMethod === 'creditcard' ? 'ph-credit-card' : 'ph-coins'"></i>
-                               <span class="font-bold text-gray-900 text-[15px] truncate leading-tight">{{ e.name }}</span>
-                           </div>
-                           <div v-if="e.payer" class="text-[9px] text-gray-400 font-medium mt-0.5">{{ e.payer }}</div>
-                           <div v-if="e.involved && e.involved.length > 0" class="text-[9px] text-gray-400 mt-0.5">
-                             {{ e.involved.length }} 人參與
-                           </div>
-                        </div>
-                   </div>
-               </div>
-               <div v-if="filteredExpenses.length === 0" class="py-10 text-center text-gray-400 text-sm">
-                  目前沒有支出紀錄
-               </div>
-            </div>
-          </div>
-
-        <div v-if="currentTab === '資訊'">
-            <h3 class="ml-2 mb-3 text-xs font-bold text-gray-500 uppercase tracking-widest">旅程資訊</h3>
-            <ul class="space-y-3" id="sortable-info">
-              <li v-for="(it, idx) in infoList" :key="it.id" :data-id="it.id" class="ios-list-item !p-5" :class="it.imageURL ? '!items-start' : '!items-center'">
-                <div class="drag-handle text-gray-300 hover:text-gray-500 mr-2 p-1" :class="it.imageURL ? 'mt-1' : ''">
-                    <i class="ph ph-dots-six-vertical text-xl"></i>
-                </div>
-                <div class="flex gap-3 flex-1 min-w-0" :class="it.imageURL ? 'items-start' : 'items-center'">
-                    <div class="cursor-pointer" :class="it.imageURL ? 'mt-1' : ''" @click="it.isDone = !it.isDone">
-                        <i class="ph text-2xl" :class="it.isDone ? 'ph-check-circle-fill text-green-500' : 'ph-info text-[#007AFF]'"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-bold text-[17px] text-gray-900 truncate">{{ it.title }}</div>
-                        <div class="text-sm text-gray-500 mt-2 whitespace-pre-wrap leading-relaxed">{{ it.note }}</div>
-                        <div v-if="it.imageURL" class="mt-4">
-                            <div class="relative group/img cursor-pointer w-full h-40 overflow-hidden rounded-xl border border-gray-200 shadow-sm" @click="openImageViewer(it.imageURL)">
-                                <img :src="it.imageURL" class="w-full h-full object-cover" alt="Thumbnail">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="action-btn-group">
-                    <button @click.stop="openInfoModal(it)" class="icon-btn edit"><i class="ph ph-pencil-simple text-lg"></i></button>
-                    <button class="icon-btn delete" @click="removeInfo(it.id)"><i class="ph ph-trash text-lg"></i></button>
-                </div>
-              </li>
-            </ul>
-            <div v-if="infoList.length === 0" class="py-12 text-center text-gray-400 text-sm">
-                目前沒有旅程資訊
-            </div>
-          </div>
-
-          <div class="flex flex-col items-center justify-end pb-4 h-32 opacity-30 select-none pointer-events-none">
-            <div class="text-[10px] font-bold uppercase tracking-widest">Travel Sync System</div>
-            <div class="text-[9px] font-mono mt-0.5">Build {{ appVersion }}</div>
-          </div>
-
-      </div>
-    </main>
-
-    <nav class="fixed bottom-6 left-0 right-0 z-30 px-4 pointer-events-none">
-      <div class="iphone-dock w-full max-w-[360px] mx-auto pointer-events-auto transition-transform hover:scale-[1.01] duration-300">
-        <button @click="currentTab = '行程'" 
-            class="group flex flex-col items-center justify-center flex-1 transition-all text-gray-400 hover:text-gray-500"
-            :class="{ '!text-[#007AFF]': currentTab === '行程' }">
-          <i class="ph ph-map-pin text-[28px] mb-1 transition-transform group-active:scale-90" :class="currentTab === '行程' ? 'fill-current' : ''"></i>
-          <span class="text-[10px] font-semibold tracking-wide">行程</span>
-        </button>
-        <button @click="currentTab = '記帳'" 
-            class="group flex flex-col items-center justify-center flex-1 transition-all text-gray-400 hover:text-gray-500"
-            :class="{ '!text-[#007AFF]': currentTab === '記帳' }">
-          <i class="ph ph-wallet text-[28px] mb-1 transition-transform group-active:scale-90" :class="currentTab === '記帳' ? 'fill-current' : ''"></i>
-          <span class="text-[10px] font-semibold tracking-wide">記帳</span>
-        </button>
-        <button @click="currentTab = '購物'" 
-            class="group flex flex-col items-center justify-center flex-1 transition-all text-gray-400 hover:text-gray-500"
-            :class="{ '!text-[#007AFF]': currentTab === '購物' }">
-          <i class="ph ph-shopping-bag text-[28px] mb-1 transition-transform group-active:scale-90" :class="currentTab === '購物' ? 'fill-current' : ''"></i>
-          <span class="text-[10px] font-semibold tracking-wide">購物</span>
-        </button>
-        <button @click="currentTab = '準備'" 
-            class="group flex flex-col items-center justify-center flex-1 transition-all text-gray-400 hover:text-gray-500"
-            :class="{ '!text-[#007AFF]': currentTab === '準備' }">
-          <i class="ph ph-list-checks text-[28px] mb-1 transition-transform group-active:scale-90" :class="currentTab === '準備' ? 'fill-current' : ''"></i>
-          <span class="text-[10px] font-semibold tracking-wide">準備</span>
-        </button>
-        <button @click="currentTab = '資訊'" 
-            class="group flex flex-col items-center justify-center flex-1 transition-all text-gray-400 hover:text-gray-500"
-            :class="{ '!text-[#007AFF]': currentTab === '資訊' }">
-          <i class="ph ph-info text-[28px] mb-1 transition-transform group-active:scale-90" :class="currentTab === '資訊' ? 'fill-current' : ''"></i>
-          <span class="text-[10px] font-semibold tracking-wide">資訊</span>
-        </button>
-      </div>
-    </nav>
-
-    <!-- 圖片檢視 Modal -->
-    <transition name="fade">
-      <div v-if="imageViewer.open" class="fixed inset-0 z-60 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" @click="imageViewer.open = false">
-        <button class="absolute top-8 right-8 text-white/50 hover:text-white p-2 transition">
-          <i class="ph ph-x-circle text-4xl"></i>
-        </button>
-        <img v-if="imageViewer.url" :src="imageViewer.url" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" @click.stop>
-      </div>
-    </transition>
-
-    <!-- 準備清單 Modal -->
-    <transition name="fade">
-      <div v-if="preNoteModalOpen" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" @click.self="closePreNoteModal">
-        <div class="ios-modal-container">
-          <div class="ios-modal-header">
-            {{ editingPreNote.id ? '編輯項目' : '新增項目' }}
-          </div>
-          <div class="ios-modal-body space-y-4">
-            <input v-model="editingPreNote.name" class="ios-input" placeholder="項目名稱">
-            <div class="flex items-center gap-3 p-3 bg-gray-100 rounded-xl">
-              <input type="checkbox" id="pre-note-done" v-model="editingPreNote.isDone" class="w-6 h-6 text-[#007AFF] rounded focus:ring-[#007AFF]">
-              <label for="pre-note-done" class="text-gray-900 font-medium select-none flex-1">標記為已完成</label>
-            </div>
-          </div>
-          <div class="ios-modal-footer">
-            <button @click="closePreNoteModal" class="btn-ios-cancel">取消</button>
-            <button @click="savePreNoteEdit" class="btn-ios-primary">儲存</button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
-    <!-- 航班 Modal -->
-    <transition name="fade">
-      <div v-if="flightModalOpen" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" @click.self="closeFlightModal">
-        <div class="ios-modal-container">
-          <div class="ios-modal-header">
-            {{ newFlight.id ? '編輯航班' : '新增航班' }}
-          </div>
-          <div class="ios-modal-body space-y-4">
-            <div class="p-1 bg-gray-200/50 rounded-xl flex">
-              <button
-                class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
-                :class="newFlight.type === 'outbound' ? 'bg-white shadow text-black' : 'text-gray-400'"
-                @click="newFlight.type = 'outbound'">
-                去程
-              </button>
-              <button
-                class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
-                :class="newFlight.type === 'return' ? 'bg-white shadow text-black' : 'text-gray-400'"
-                @click="newFlight.type = 'return'">
-                回程
-              </button>
-            </div>
-
-            <div>
-              <label class="text-xs text-gray-400 ml-1 font-bold">航班號碼</label>
-              <input v-model="newFlight.code" class="ios-input" placeholder="CX400">
-            </div>
-
-            <div>
-              <label class="text-xs text-gray-400 ml-1 font-bold">狀態</label>
-              <select v-model="newFlight.status" class="ios-input appearance-none">
-                <option value="On Time">On Time</option>
-                <option value="Boarding">Boarding</option>
-                <option value="Delayed">Delayed</option>
-                <option value="Landed">Landed</option>
-              </select>
-            </div>
-
-            <div class="flex gap-2">
-              <div class="flex-1 min-w-0">
-                <label class="text-xs text-gray-400 ml-1 font-bold">出發地</label>
-                <div class="flex gap-1">
-                  <input v-model="newFlight.fromCode" class="ios-input text-center uppercase w-[23%]" placeholder="HKG">
-                  <input v-model="newFlight.fromTerminal" class="ios-input text-center uppercase w-[13%] text-sm px-1" placeholder="T1">
-                </div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <label class="text-xs text-gray-400 ml-1 font-bold">目的地</label>
-                <div class="flex gap-1">
-                  <input v-model="newFlight.toCode" class="ios-input text-center uppercase w-[23%]" placeholder="TPE">
-                  <input v-model="newFlight.toTerminal" class="ios-input text-center uppercase w-[13%] text-sm px-1" placeholder="T1">
-                </div>
-              </div>
-            </div>
-
-            <div class="flex gap-3">
-              <div class="flex-1 min-w-0">
-                <label class="text-xs text-gray-400 ml-1 font-bold">起飛時間</label>
-                <input v-model="newFlight.depTime" type="time" class="ios-input w-full">
-              </div>
-              <div class="flex-1 min-w-0">
-                <label class="text-xs text-gray-400 ml-1 font-bold">抵達時間</label>
-                <input v-model="newFlight.arrTime" type="time" class="ios-input w-full">
-              </div>
-            </div>
-
-            <div>
-              <label class="text-xs text-gray-400 ml-1 font-bold">登機閘口</label>
-              <input v-model="newFlight.gate" class="ios-input" placeholder="B42">
-            </div>
-
-            <div>
-              <label class="text-xs text-gray-400 ml-1 font-bold">備註</label>
-              <textarea v-model="newFlight.note" class="ios-input" rows="2" placeholder="例如：Economy / Premium / Business"></textarea>
-            </div>
-          </div>
-          <div class="ios-modal-footer">
-            <button @click="closeFlightModal" class="btn-ios-cancel">取消</button>
-            <button @click="saveFlight" class="btn-ios-primary">儲存</button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
-    <!-- 其餘記帳 / 行程 / 資訊 Modal 和邏輯照原版保留，此處略 -->
-  </div>
-
-  <script>
-    const { createApp, ref, reactive, computed, onMounted } = Vue;
-
-    const SUPABASE_URL = '';
-    const SUPABASE_KEY = '';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    createApp({
-      setup() {
-        const appVersion = ref('v251220-5.09.1');
-
-        const currentTab = ref('準備'); 
-        const selectedDay = ref(0); 
-
-        const syncState = ref('loading');
-        const isInitialized = ref(false); 
-        const lastSyncedAt = ref(0);
-
-        const syncStatusText = computed(() => {
-          const map = { 'synced': '已同步', 'saving': '儲存中...', 'loading': '更新中...', 'error': '錯誤' };
-          return map[syncState.value] || '未知';
-        });
-
-        const days = reactive([
-          { date: '15', week: 'Mon', label: '抵達 (Day 1)', type: 'flight-out' },
-          { date: '16', week: 'Tue', label: 'Day 2', type: 'normal' },
-          { date: '17', week: 'Wed', label: 'Day 3', type: 'normal' },
-          { date: '18', week: 'Thu', label: '回程 (Day 4)', type: 'flight-return' },
-        ]);
-        const isFlightDay = computed(() => ['flight-out', 'flight-return'].includes(days[selectedDay.value]?.type));
-
-        const itinerary = reactive([[], [], [], []]);
-        const sortedItinerary = computed(() => itinerary[selectedDay.value] || []);
-
-        const selectedMapLocation = ref(null);
-        function showLocationOnMap(item) {
-          selectedMapLocation.value = (item.address && item.address.trim() !== '') ? { title: item.title, address: item.address, id: item.id } : null;
-        }
-        
-        function generateMapLink(address, type) {
-          if (!address) return '#';
-          const q = encodeURIComponent(address);
-          if (type === 'search') return `https://www.google.com/maps/search/?api=1&query=${q}`;
-          else return `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=walking`;
+      <script>
+        const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+        // --- Constants & Config ---
+        const SUPABASE_URL = 'https://myrhatzdypiwwgmmfbuw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuYQVvKi';
+        const TRIP_ID = 'taipei_trip2025';
+        const CURRENCY_RATES = { 'HKD': 1, 'JPY': 0.052, 'USD': 7.8 };
+        // --- Utilities ---
+        const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
+        const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+        const initializeListWithIds = (list) => list.map(item => ({ ...item, id: item.id || generateId() }));
+        function isInstagramLink(url) { return url && /^(https?:\\/\\/(www\\.)?instagram\\.com\\/(p|reel)\\/)/i.test(url); }
+        function formatNumber(num, precision = 0) {
+           if(num === undefined || num === null || num === '') return '0';
+           return Number(num).toLocaleString('en-US', { minimumFractionDigits: precision, maximumFractionDigits: precision });
         }
 
-        const flights = ref([
-           { id: 'outbound', type: 'outbound', date: '2025-12-15', code: 'CX400', depTime: '12:45', arrTime: '14:45', fromCode: 'HKG', fromTerminal: 'T1', toCode: 'TPE', toTerminal: 'T1', title: 'Cathay Pacific', note: 'Economy', isConfirmed: true, status: 'On Time', gate: '24', liveLink: 'https://live.flighty.app/2af42e286-3d91-4f25-91b8-d22148de4e6a' },
-           { id: 'return', type: 'return', date: '2025-12-18', code: 'CX443', depTime: '17:00', arrTime: '18:55', fromCode: 'TPE', fromTerminal: 'T1', toCode: 'HKG', toTerminal: 'T1', title: 'Cathay Pacific', note: 'Economy', isConfirmed: false, status: 'Scheduled', gate: '--', 
-             liveLink: 'https://live.flighty.app/29fab3b3b-3e56-439f-8292-853a0a6f1bf3' }
-        ]);
-        const activeFlight = computed(() => {
-          const type = days[selectedDay.value]?.type;
-          let f = (type === 'flight-out') ? flights.value.find(f => f.type === 'outbound') : (type === 'flight-return' ? flights.value.find(f => f.type === 'return') : null);
-          return f;
-        });
-        const shouldShowFlightCard = computed(() => activeFlight.value !== null && currentTab.value === '行程');
-
-        function getStatusClass(status) {
-            if (status === 'On Time' || status === 'Landed') return 'status-ontime';
-            if (status === 'Delayed') return 'status-delayed';
-            if (status === 'Boarding') return 'status-boarding';
-            return 'bg-white/10 border-white/20 text-white';
-        }
-
-        /* 單一切換 state：預設 HKG */
-        const flightBoardStyle = ref('hkg');
-
-        const isUploading = ref(false);
-        const uploadStatus = reactive({ shopping: '', info: '' });
-        const tempUploadPreview = reactive({ shopping: null, info: null });
-        const pendingUploadFiles = { shopping: null, info: null };
-
-        function handleFileUpload(event, type) {
-            const file = event.target.files[0];
-            if (!file) return;
-            tempUploadPreview[type] = URL.createObjectURL(file);
-            pendingUploadFiles[type] = file;
-            uploadStatus[type] = '準備上傳...';
-        }
-
-        const imageViewer = reactive({ open: false, url: '' });
-        function openImageViewer(url) {
-          imageViewer.url = url;
-          imageViewer.open = true;
-        }
-
-        const preTripNotes = reactive([]);
-        const newPreNote = ref('');
-        const preNoteModalOpen = ref(false);
-        const editingPreNote = reactive({ id: null, name: '', isDone: false });
-
-        function addPreNote() {
-          if (!newPreNote.value.trim()) return;
-          preTripNotes.push({ id: Date.now().toString(), name: newPreNote.value.trim(), isDone: false });
-          newPreNote.value = '';
-        }
-
-        function togglePreNoteDone(id) {
-          const note = preTripNotes.find(n => n.id === id);
-          if (note) note.isDone = !note.isDone;
-        }
-
-        function editPreNote(note) {
-          editingPreNote.id = note.id;
-          editingPreNote.name = note.name;
-          editingPreNote.isDone = note.isDone;
-          preNoteModalOpen.value = true;
-        }
-
-        function closePreNoteModal() {
-          preNoteModalOpen.value = false;
-          editingPreNote.id = null;
-          editingPreNote.name = '';
-          editingPreNote.isDone = false;
-        }
-
-        function savePreNoteEdit() {
-          if (!editingPreNote.name.trim()) return;
-          const idx = preTripNotes.findIndex(n => n.id === editingPreNote.id);
-          if (idx !== -1) {
-            preTripNotes[idx].name = editingPreNote.name.trim();
-            preTripNotes[idx].isDone = editingPreNote.isDone;
-          } else {
-            preTripNotes.push({
-              id: Date.now().toString(),
-              name: editingPreNote.name.trim(),
-              isDone: editingPreNote.isDone
-            });
+        createApp({
+          setup() {
+            const flightBoardStyle = ref('hkg'); // 預設為 HKG 風格
+            // 其他 reactive 狀態...
+            return {
+              flightBoardStyle,
+              // ... 其他返回值
+            };
           }
-          closePreNoteModal();
-        }
+        }).mount('#app');
+      </script>
 
-        function removePreNote(id) {
-          const idx = preTripNotes.findIndex(n => n.id === id);
-          if (idx !== -1) preTripNotes.splice(idx, 1);
-        }
-
-        const flightModalOpen = ref(false);
-        const newFlight = reactive({
-          id: null,
-          type: 'outbound',
-          date: '2025-12-15',
-          code: '',
-          depTime: '',
-          arrTime: '',
-          fromCode: 'HKG',
-          fromTerminal: '',
-          toCode: 'TPE',
-          toTerminal: '',
-          status: 'Scheduled',
-          gate: '--',
-          note: '',
-          liveLink: ''
-        });
-
-        function openFlightModal(id) {
-          const def = {
-            id: null,
-            type: 'outbound',
-            date: '2025-12-15',
-            code: '',
-            depTime: '',
-            arrTime: '',
-            fromCode: 'HKG',
-            fromTerminal: '',
-            toCode: 'TPE',
-            toTerminal: '',
-            status: 'Scheduled',
-            gate: '--',
-            note: '',
-            liveLink: ''
-          };
-          if (id === 'new') {
-            const t = days[selectedDay.value]?.type;
-            def.type = (t === 'flight-return') ? 'return' : 'outbound';
-            def.fromCode = def.type === 'return' ? 'TPE' : 'HKG';
-            def.toCode = def.type === 'return' ? 'HKG' : 'TPE';
-            def.date = def.type === 'return' ? '2025-12-18' : '2025-12-15';
-            Object.assign(newFlight, def);
-          } else {
-            const f = flights.value.find(x => x.id === id) || flights.value.find(x => x.type === id);
-            if (f) Object.assign(newFlight, JSON.parse(JSON.stringify(f)));
-          }
-          flightModalOpen.value = true;
-        }
-
-        function closeFlightModal() {
-          flightModalOpen.value = false;
-        }
-
-        function saveFlight() {
-          const item = { ...newFlight };
-          if (!item.id) {
-            item.id = item.type;
-          }
-          const idx = flights.value.findIndex(f => f.id === item.id);
-          if (idx !== -1) {
-            flights.value.splice(idx, 1, item);
-          } else {
-            flights.value.push(item);
-          }
-          closeFlightModal();
-        }
-
-        const quickItinerary = reactive({ time: '', title: '' });
-        function addQuickItinerary() {
-          if (!quickItinerary.title.trim()) return;
-          const arr = itinerary[selectedDay.value] || [];
-          arr.push({
-            id: Date.now().toString(),
-            time: quickItinerary.time || '',
-            title: quickItinerary.title.trim(),
-            note: '',
-            address: ''
-          });
-          itinerary[selectedDay.value] = arr;
-          quickItinerary.time = '';
-          quickItinerary.title = '';
-        }
-
-        function openItineraryModal(it) {
-          // 保留原實作（略）
-        }
-
-        function removeItineraryItem(id) {
-          const arr = itinerary[selectedDay.value] || [];
-          const idx = arr.findIndex(x => x.id === id);
-          if (idx !== -1) arr.splice(idx, 1);
-        }
-
-        const shoppingList = reactive([]);
-        function openShoppingModal(item) {
-          // 保留原實作（略）
-        }
-        function removeShoppingItem(id) {
-          const idx = shoppingList.findIndex(x => x.id === id);
-          if (idx !== -1) shoppingList.splice(idx, 1);
-        }
-        function isInstagramLink(url) {
-          return typeof url === 'string' && url.includes('instagram.com');
-        }
-
-        const infoList = reactive([]);
-        function openInfoModal(it) {
-          // 保留原實作（略）
-        }
-        function removeInfo(id) {
-          const idx = infoList.findIndex(x => x.id === id);
-          if (idx !== -1) infoList.splice(idx, 1);
-        }
-
-        const totalExpense = reactive({ hkd: 0, twd: 0, creditHkd: 0, creditTwd: 0, cashHkd: 0, cashTwd: 0 });
-        const expenseFilter = ref('all');
-        const settlementStatus = reactive({ hasData: false });
-        const settlementList = reactive([]);
-        const currentLiveRate = ref(4.1);
-        const filteredExpenses = reactive([]);
-        const weather = reactive({ temp: 26, feelsLike: 28, humidity: 70, uv: 5, desc: '多雲', rain: 20, max: 28, min: 22, warning: '' });
-        const weatherIconClass = computed(() => 'ph ph-sun');
-        const imageUploadTarget = ref('');
-
-        function openMemberModal() {}
-        function openExpenseModal(e) {}
-        function removeExpense(id) {}
-        function getCategoryIcon(cat) { return 'ph-fork-knife'; }
-        function formatNumber(v, d) {
-          if (typeof v !== 'number') v = Number(v) || 0;
-          return v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-        }
-        function selectDay(i) {
-          selectedDay.value = i;
-        }
-        function openAddModal() {
-          if (currentTab.value === '行程') {
-            // 行程新增
-          } else if (currentTab.value === '購物') {
-            // 購物新增
-          } else if (currentTab.value === '資訊') {
-            // 資訊新增
-          } else if (currentTab.value === '準備') {
-            addPreNote();
-          } else if (currentTab.value === '記帳') {
-            openExpenseModal(null);
-          }
-        }
-        function forceReloadCloud() {}
-
-        onMounted(() => {
-          syncState.value = 'synced';
-          isInitialized.value = true;
-        });
-
-        return {
-          appVersion,
-          currentTab,
-          selectedDay,
-          days,
-          isFlightDay,
-          itinerary,
-          sortedItinerary,
-          selectedMapLocation,
-          showLocationOnMap,
-          generateMapLink,
-          flights,
-          activeFlight,
-          shouldShowFlightCard,
-          getStatusClass,
-          isUploading,
-          uploadStatus,
-          tempUploadPreview,
-          handleFileUpload,
-          imageViewer,
-          openImageViewer,
-          preTripNotes,
-          newPreNote,
-          addPreNote,
-          togglePreNoteDone,
-          editPreNote,
-          preNoteModalOpen,
-          editingPreNote,
-          closePreNoteModal,
-          savePreNoteEdit,
-          removePreNote,
-          flightModalOpen,
-          newFlight,
-          openFlightModal,
-          closeFlightModal,
-          saveFlight,
-          quickItinerary,
-          addQuickItinerary,
-          openItineraryModal,
-          removeItineraryItem,
-          shoppingList,
-          openShoppingModal,
-          removeShoppingItem,
-          isInstagramLink,
-          infoList,
-          openInfoModal,
-          removeInfo,
-          totalExpense,
-          expenseFilter,
-          settlementStatus,
-          settlementList,
-          currentLiveRate,
-          filteredExpenses,
-          weather,
-          weatherIconClass,
-          openMemberModal,
-          openExpenseModal,
-          removeExpense,
-          getCategoryIcon,
-          formatNumber,
-          selectDay,
-          openAddModal,
-          syncState,
-          syncStatusText,
-          lastSyncedAt,
-          isInitialized,
-          forceReloadCloud,
-          imageUploadTarget,
-          flightBoardStyle
-        };
-      }
-    }).mount('#app');
-  </script>
+    </main> 
+  </div> 
 </body>
 </html>
