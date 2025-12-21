@@ -1,3 +1,5 @@
+新殼舊功能
+
 <!-- === PART 1 / 3 === -->
 <!DOCTYPE html>
 <html lang="zh-HK">
@@ -52,10 +54,11 @@
 
 <script>
 
-// --- Constants & Config ---
-    const SUPABASE_URL = 'https://myrhatzdypiwwgmmfbuw.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuYQVvKi';
-    const TRIP_ID = 'taipei_trip2025';
+/* === Supabase client (from Original add HKG Card 5.10) === */
+const SUPABASE_URL = 'https://myrhatzdypiwwgmmfbuw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuYQVvKi';
+const supabase = supabasejs.createClient(https://myrhatzdypiwwgmmfbuw.supabase.co, sb_publishable_bnnah-2fsCaQnKZDoKNJQw_NuYQVvKi);
+const TRIP_ID = 'taipei_trip2025';
     const CURRENCY_RATES = { 'HKD': 1, 'JPY': 0.052, 'USD': 7.8 };
 
 <header class="sticky top-0 z-40 pt-12 pb-2 px-6 flex justify-between items-end bg-[#F2F2F7]/90 backdrop-blur-md transition-all duration-300"
