@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Travel Sync v5.10</title>
+  <title>Travel Sync v5.09</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -237,35 +237,7 @@
     /* Flight Status */
     .status-ontime { color: var(--ios-success); background: rgba(52, 199, 89, 0.15); border: 1px solid rgba(52, 199, 89, 0.2); }
     .status-delayed { color: var(--ios-danger); background: rgba(255, 59, 48, 0.15); border: 1px solid rgba(255, 59, 48, 0.2); }
-    .status-boarding { color: var(--ios-warning);
-      background: rgba(255, 204, 0, 0.15); border: 1px solid rgba(255, 204, 0, 0.2);
-    }
-
-    /* --- HKG Board Style (v5.10) --- */
-    .ios-card-dark-glass.hkg-style {
-      background: #353E53 !important;
-      backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-      border: none !important; border-radius: 6px !important;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .hkg-style .dark-glass-gradient { display: none; }
-    
-    /* HKG Style Internal Overrides */
-    .hkg-style .text-shadow-none { text-shadow: none !important; }
-
-/* === HKG Style Force Reset (Default Apply) === */
-.ios-card-dark-glass.hkg-style {
-  background: #353E53 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-}
-
-.ios-card-dark-glass.hkg-style::before,
-.ios-card-dark-glass.hkg-style::after {
-  display: none !important;
-}
+    .status-boarding { color: var(--ios-warning); background: rgba(255, 204, 0, 0.15); border: 1px solid rgba(255, 204, 0, 0.2); }
 
   </style>
 </head>
@@ -342,75 +314,34 @@
       <div v-if="currentTab === '行程'" class="space-y-5 mb-6">
         
         <transition name="fade">
-          <div v-if="shouldShowFlightCard" class="ios-card-dark-glass p-0 mb-4 transition-all duration-500"
-               :class="{ 'hkg-style': flightBoardStyle === 'hkg' }">
-              
+          <div v-if="shouldShowFlightCard" class="ios-card-dark-glass p-0 mb-4">
               <div class="dark-glass-gradient"></div>
               
-              <div class="absolute top-3 right-3 z-30 flex items-center gap-2">
-                 <button @click.stop="flightBoardStyle = flightBoardStyle === 'hkg' ? 'ios' : 'hkg'" 
-                         class="px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all active:scale-95 select-none"
-                         :class="flightBoardStyle === 'hkg' ? 'bg-white text-black border-white shadow-md' : 'bg-black/20 text-white border-white/20 backdrop-blur-md hover:bg-black/30'">
-                     {{ flightBoardStyle === 'hkg' ? 'iOS' : 'HKG' }}
-                 </button>
-                 
-                 <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" class="text-[#34C759] bg-black/20 hover:bg-black/30 border border-white/10 p-1.5 rounded-full backdrop-blur-md transition active:scale-95">
-                     <i class="ph ph-broadcast text-sm animate-pulse"></i>
-                 </a>
-
-                 <button @click.stop="openFlightModal(activeFlight.id)" class="text-white/70 hover:text-white bg-black/20 hover:bg-black/40 border border-white/10 p-1.5 rounded-full transition backdrop-blur-md active:scale-95">
-                      <i class="ph ph-pencil-simple text-sm"></i>
-                 </button>
-              </div>
-
-              <div v-if="flightBoardStyle === 'hkg'" class="flex flex-col h-full relative z-10 w-full">
+              <div class="p-5 pb-2 relative z-10">
+                  <div class="flex justify-between items-center mb-1">
+                       <div class="flex items-center gap-2">
+                          <i class="ph ph-airplane-in-flight text-[#007AFF] text-lg"></i>
+                          <span class="text-xs font-bold uppercase tracking-widest opacity-70">即時航班動態</span>
+                      </div>
+                       <button @click.stop="openFlightModal(activeFlight.id)" class="text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition backdrop-blur-md">
+                          <i class="ph ph-pencil-simple text-sm"></i>
+                      </button>
+                  </div>
                   
-                  <div class="pt-6 pb-4 text-center flex flex-col items-center justify-center">
-                      <div class="text-[10px] text-white/50 uppercase tracking-widest font-bold mb-1">Gate</div>
-                      <div class="text-[4.5rem] leading-[0.85] font-bold text-[#FFCC00] font-sans drop-shadow-lg tracking-tighter">{{ activeFlight.gate || '--' }}</div>
-                  </div>
-
-                  <div class="mx-0 mb-0 bg-[#F2F2F7] border-t-4 border-[#FFCC00] px-6 py-4 flex items-center justify-between shadow-2xl relative z-20">
-                      <div class="flex flex-col items-start">
-                          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">航班 Flight</span>
-                          <span class="text-3xl font-bold text-black font-mono text-shadow-none tracking-tight">{{ activeFlight.code }}</span>
-                      </div>
-                       <div class="flex flex-col items-end">
-                          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">預計起飛 Dep</span>
-                          <span class="text-3xl font-bold text-black font-mono text-shadow-none tracking-tight">{{ activeFlight.depTime }}</span>
-                      </div>
-                  </div>
-
-                  <div class="bg-[#BF443B] mx-0 px-5 pt-4 pb-5 flex justify-between items-end relative shadow-inner">
-                      <div class="flex flex-col items-start gap-3">
-                           <div class="flex items-baseline gap-2">
-                               <span class="text-2xl font-bold text-white font-mono leading-none">{{ activeFlight.fromCode }}</span>
-                               <span class="text-sm font-bold text-white/80 uppercase">{{ activeFlight.fromTerminal }}</span>
-                           </div>
-                           <div class="flex items-baseline gap-2">
-                               <span class="text-4xl font-bold text-[#FFCC00] font-mono leading-none drop-shadow-md">{{ activeFlight.toCode }}</span>
-                               <span class="text-xl font-bold text-[#FFCC00]/90 uppercase">{{ activeFlight.toTerminal }}</span>
-                           </div>
-                      </div>
-
-                      <div class="flex flex-col items-end text-right">
-                          <div class="text-lg font-extrabold text-white mb-1 uppercase tracking-wider">{{ activeFlight.status || 'Scheduled' }}</div>
-                          <div class="flex flex-col items-end">
-                              <span class="text-[9px] text-white/60 uppercase font-bold tracking-wide">預計抵達 Arr</span>
-                              <span class="text-2xl font-bold text-white font-mono leading-none mt-0.5">{{ activeFlight.arrTime }}</span>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              <div v-else class="p-5 pb-6 relative z-10">
-                  <div class="flex justify-start items-center mb-6 mt-1">
+                  <div class="flex justify-between items-center mt-3">
                       <div class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide border backdrop-blur-md"
                           :class="getStatusClass(activeFlight.status)">
-                          {{ activeFlight.status || 'Scheduled' }}
+                           {{ activeFlight.status || 'Scheduled' }}
                       </div>
+                      <a v-if="activeFlight.liveLink" :href="activeFlight.liveLink" target="_blank" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold text-white transition-all active:scale-95">
+                          <i class="ph ph-broadcast text-[#34C759] animate-pulse"></i>
+                          Flighty 實況
+                          <i class="ph ph-arrow-square-out text-xs opacity-70"></i>
+                      </a>
                   </div>
-  
+              </div>
+
+              <div class="px-5 pt-1 pb-6 relative z-10">
                   <div class="flex items-center justify-between mt-4">
                     <div class="text-center min-w-[60px]">
                        <div class="text-3xl font-bold tracking-wider text-white">{{ activeFlight.fromCode }}</div>
@@ -437,7 +368,7 @@
                       <div>
                           <div class="text-[10px] opacity-50 uppercase tracking-wider mb-0.5">預計起飛</div>
                           <div class="text-2xl font-mono font-bold leading-none">{{ activeFlight.depTime }}</div>
-                      </div>
+                       </div>
                       
                       <div class="flex flex-col items-center bg-white/10 px-4 py-2 rounded-xl border border-white/10">
                            <div class="text-[9px] opacity-50 uppercase tracking-widest mb-0.5">登機閘口</div>
@@ -450,7 +381,7 @@
                       </div>
                   </div>
               </div>
-          </div>
+            </div>
         </transition>
 
         <div class="ios-card p-5 relative">
@@ -1212,8 +1143,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     createApp({
       setup() {
-        const appVersion = ref('v251221-5.10'); // Version Updated
-        const flightBoardStyle = ref('hkg'); // Styles: 'hkg' | 'ios'
+        const appVersion = ref('v251220-5.09'); // Version Updated
         const currentTab = ref('準備'); 
         const selectedDay = ref(0); 
 
